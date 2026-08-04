@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-observability-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/nicknoonan/k8cluster.git'
+    targetRevision: HEAD
+    path: observability/apps
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
