@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/nicknoonan/k8cluster.git'
+    targetRevision: HEAD
+    path: .
+    directory:
+      recurse: true
+      include: '{observability/observability.yaml,platform/node-power-manager.yaml}'
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
