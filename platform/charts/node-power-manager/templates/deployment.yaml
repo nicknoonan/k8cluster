@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "node-power-manager.fullname" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "node-power-manager.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "node-power-manager.name" . }}
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      serviceAccountName: {{ default (include "node-power-manager.fullname" .) .Values.serviceAccount.name }}
+      containers:
+        - name: manager
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: TARGET_NODE_NAME
+              value: {{ .Values.config.targetNodeName | quote }}
+            - name: TARGET_MAC_ADDRESS
+              value: {{ .Values.config.targetMacAddress | quote }}
+            - name: TARGET_IP
+              value: {{ .Values.config.targetIp | quote }}
+            - name: SSH_USER
+              value: {{ .Values.config.sshUser | quote }}
+            - name: MANAGED_DEPLOYMENTS
+              value: {{ join "," .Values.config.managedDeployments | quote }}
+          volumeMounts:
+            - name: ssh-key
+              mountPath: /etc/ssh-keys
+              readOnly: true
+      volumes:
+        - name: ssh-key
+          secret:
+            secretName: {{ .Values.config.sshSecretName }}
+            defaultMode: 0400

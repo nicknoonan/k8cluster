@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Node Power Manager</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 60rem; }
+    button { margin-right: .5rem; padding: .75rem 1rem; }
+    pre { background: #111; color: #0f0; padding: 1rem; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h1>Node Power Manager</h1>
+  <p>Control the managed node and its workloads.</p>
+  <div>
+    <button id="power-on">Power on</button>
+    <button id="power-off">Power off</button>
+    <button id="refresh">Refresh status</button>
+  </div>
+  <h2>Status</h2>
+  <pre id="status">loading...</pre>
+  <script src="/app.js"></script>
+</body>
+</html>

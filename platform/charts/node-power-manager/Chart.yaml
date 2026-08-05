@@ -1,0 +1,6 @@
+apiVersion: v2
+name: node-power-manager
+description: Wake and power off a managed Kubernetes node and its workloads
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
