@@ -1,4 +1,4 @@
-name: Build and Publish Artifacts
+name: release node-power-manager
 
 on:
   push:
