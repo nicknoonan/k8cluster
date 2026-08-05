@@ -158,3 +158,7 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+
+## Current progress
+
+- The release workflow should now read `version` and `appVersion` from `charts/node-power-manager/Chart.yaml` when packaging the chart.

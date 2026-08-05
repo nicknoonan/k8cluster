@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: node-power-manager
 
 jobs:
   build-and-push:
@@ -55,8 +55,12 @@ jobs:
 
       - name: Package and push Helm chart
         run: |
-          VERSION="${{ steps.meta.outputs.version }}"
-          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.+].*)?$ ]]; then VERSION="0.1.0-${GITHUB_SHA::7}"; fi
+          CHART_VERSION="$(awk -F': *' '$1 == "version" {print $2; exit}' platform/charts/node-power-manager/Chart.yaml)"
+          APP_VERSION="$(awk -F': *' '$1 == "appVersion" {gsub(/"/, "", $2); print $2; exit}' platform/charts/node-power-manager/Chart.yaml)"
+          if [ -z "$CHART_VERSION" ] || [ -z "$APP_VERSION" ]; then
+            echo "Chart.yaml must define version and appVersion"
+            exit 1
+          fi
           helm registry login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin <<< "${{ secrets.GITHUB_TOKEN }}"
-          helm package ./platform/charts/node-power-manager --version "$VERSION" --app-version "$VERSION"
-          helm push "node-power-manager-$VERSION.tgz" "oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts"
+          helm package ./platform/charts/node-power-manager --version "$CHART_VERSION" --app-version "$APP_VERSION"
+          helm push "node-power-manager-$CHART_VERSION.tgz" "oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts"
