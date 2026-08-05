@@ -23,12 +23,13 @@ spec:
           replicas: 0
         write:
           replicas: 0
-        storage:
-          type: filesystem
-          bucketNames:
-            chunks: "dummy-chunks"
-            ruler: "dummy-ruler"
-            admin: "dummy-admin"
+        loki:
+          storage:
+            type: filesystem
+            bucketNames:
+              chunks: "dummy-chunks"
+              ruler: "dummy-ruler"
+              admin: "dummy-admin"
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: monitoring
