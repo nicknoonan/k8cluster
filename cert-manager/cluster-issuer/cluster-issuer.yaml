@@ -1,0 +1,22 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: nicknoonan86@gmail.com
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+    - dns01:
+        azureDNS:
+          clientID: "ddc68b08-4fa7-4fd5-b8d0-990b4a770c8d"
+          tenantID: "b1472b5a-c2b5-4ebe-acaa-c6fc7de5b5de"
+          subscriptionID: "d38a7a94-ab62-41b6-a70d-19317807e67e"
+          resourceGroupName: "nn-network"
+          hostedZoneName: "nicknoonan.net"
+          environment: AzurePublicCloud
+          clientSecretSecretRef:
+            name: azure-config-secret
+            key: client-secret
