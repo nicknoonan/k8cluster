@@ -42,8 +42,8 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
-          context: ./platform
-          file: ./platform/Dockerfile
+          context: ./node-power-manager
+          file: ./node-power-manager/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -55,12 +55,12 @@ jobs:
 
       - name: Package and push Helm chart
         run: |
-          CHART_VERSION="$(awk -F': *' '$1 == "version" {print $2; exit}' platform/charts/node-power-manager/Chart.yaml)"
-          APP_VERSION="$(awk -F': *' '$1 == "appVersion" {gsub(/"/, "", $2); print $2; exit}' platform/charts/node-power-manager/Chart.yaml)"
+          CHART_VERSION="$(awk -F': *' '$1 == "version" {print $2; exit}' node-power-manager/charts/node-power-manager/Chart.yaml)"
+          APP_VERSION="$(awk -F': *' '$1 == "appVersion" {gsub(/"/, "", $2); print $2; exit}' node-power-manager/charts/node-power-manager/Chart.yaml)"
           if [ -z "$CHART_VERSION" ] || [ -z "$APP_VERSION" ]; then
             echo "Chart.yaml must define version and appVersion"
             exit 1
           fi
           helm registry login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin <<< "${{ secrets.GITHUB_TOKEN }}"
-          helm package ./platform/charts/node-power-manager --version "$CHART_VERSION" --app-version "$APP_VERSION"
+          helm package ./node-power-manager/charts/node-power-manager --version "$CHART_VERSION" --app-version "$APP_VERSION"
           helm push "node-power-manager-$CHART_VERSION.tgz" "oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts"
