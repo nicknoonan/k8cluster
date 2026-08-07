@@ -21,6 +21,7 @@ spec:
           targetIp: "192.168.1.112"
           # Set this to the account that has the node-power-manager public key in authorized_keys.
           sshUser: "nick"
+          sshShutdownCommand: "sudo shutdown now"
           sshSecretName: node-power-manager-ssh
           managedDeployments: []
   destination:

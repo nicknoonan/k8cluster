@@ -32,6 +32,8 @@ spec:
               value: {{ .Values.config.targetIp | quote }}
             - name: SSH_USER
               value: {{ .Values.config.sshUser | quote }}
+            - name: SSH_SHUTDOWN_COMMAND
+              value: {{ .Values.config.sshShutdownCommand | quote }}
             - name: MANAGED_DEPLOYMENTS
               value: {{ join "," .Values.config.managedDeployments | quote }}
           volumeMounts:

@@ -24,6 +24,7 @@ type Config struct {
 	TargetMacAddress   string
 	TargetIP           string
 	SSHUser            string
+	SSHShutdownCommand string
 	SSHPrivateKey      []byte
 	SSHPrivateKeyPath  string
 	ManagedDeployments []ManagedDeployment
@@ -52,16 +53,17 @@ func Load() (Config, error) {
 	}
 
 	cfg := Config{
-		Port:              envOrDefault("PORT", "8080"),
-		TargetNodeName:    os.Getenv("TARGET_NODE_NAME"),
-		TargetMacAddress:  os.Getenv("TARGET_MAC_ADDRESS"),
-		TargetIP:          os.Getenv("TARGET_IP"),
-		SSHUser:           envOrDefault("SSH_USER", "root"),
-		SSHPrivateKeyPath: envOrDefault("SSH_PRIVATE_KEY_PATH", "/etc/ssh-keys/id_rsa"),
-		PowerOnTimeout:    powerOnTimeout,
-		PowerOffTimeout:   powerOffTimeout,
-		NodeReadyTimeout:  nodeReadyTimeout,
-		NodePollInterval:  nodePollInterval,
+		Port:               envOrDefault("PORT", "8080"),
+		TargetNodeName:     os.Getenv("TARGET_NODE_NAME"),
+		TargetMacAddress:   os.Getenv("TARGET_MAC_ADDRESS"),
+		TargetIP:           os.Getenv("TARGET_IP"),
+		SSHUser:            envOrDefault("SSH_USER", "root"),
+		SSHShutdownCommand: envOrDefault("SSH_SHUTDOWN_COMMAND", "sudo shutdown now"),
+		SSHPrivateKeyPath:  envOrDefault("SSH_PRIVATE_KEY_PATH", "/etc/ssh-keys/id_rsa"),
+		PowerOnTimeout:     powerOnTimeout,
+		PowerOffTimeout:    powerOffTimeout,
+		NodeReadyTimeout:   nodeReadyTimeout,
+		NodePollInterval:   nodePollInterval,
 	}
 
 	if deps := os.Getenv("MANAGED_DEPLOYMENTS"); deps != "" {

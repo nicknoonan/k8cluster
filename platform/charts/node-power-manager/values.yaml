@@ -19,6 +19,7 @@ config:
   targetMacAddress: ""
   targetIp: ""
   sshUser: root
+  sshShutdownCommand: "sudo shutdown now"
   sshSecretName: node-power-manager-ssh
   managedDeployments: []
 

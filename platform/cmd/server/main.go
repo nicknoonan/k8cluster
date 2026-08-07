@@ -22,7 +22,7 @@ func main() {
 		log.Printf("kubernetes client unavailable: %v", err)
 	}
 
-	sshClient, err := power.NewSSHClient(cfg.SSHUser, cfg.SSHPrivateKey)
+	sshClient, err := power.NewSSHClient(cfg.SSHUser, cfg.SSHPrivateKey, cfg.SSHShutdownCommand)
 	if err != nil {
 		log.Fatalf("load ssh client: %v", err)
 	}
