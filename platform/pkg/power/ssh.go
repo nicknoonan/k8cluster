@@ -11,6 +11,7 @@ import (
 )
 
 type PowerOffClient interface {
+	Validate(ctx context.Context, target string) error
 	PowerOff(ctx context.Context, target string) error
 }
 
@@ -39,15 +40,23 @@ func NewSSHClient(user string, privateKey []byte) (*SSHClient, error) {
 }
 
 func (c *SSHClient) PowerOff(ctx context.Context, target string) error {
+	return c.runCommand(ctx, target, "sudo -n systemctl poweroff")
+}
+
+func (c *SSHClient) Validate(ctx context.Context, target string) error {
+	return c.runCommand(ctx, target, "sudo -n true")
+}
+
+func (c *SSHClient) runCommand(ctx context.Context, target, command string) error {
 	conn, err := ssh.Dial("tcp", net.JoinHostPort(target, "22"), c.config)
 	if err != nil {
-		return fmt.Errorf("dial ssh: %w", err)
+		return fmt.Errorf("dial ssh as %s: %w", c.user, err)
 	}
 	defer conn.Close()
 
 	session, err := conn.NewSession()
 	if err != nil {
-		return fmt.Errorf("create ssh session: %w", err)
+		return fmt.Errorf("create ssh session as %s: %w", c.user, err)
 	}
 	defer session.Close()
 
@@ -55,8 +64,8 @@ func (c *SSHClient) PowerOff(ctx context.Context, target string) error {
 	session.Stdout = &bytes.Buffer{}
 	session.Stderr = &stderr
 
-	if err := session.Run("sudo -n systemctl poweroff"); err != nil {
-		return fmt.Errorf("execute poweroff on %s: %w: %s", target, err, stderr.String())
+	if err := session.Run(command); err != nil {
+		return fmt.Errorf("execute %q on %s as %s: %w: %s", command, target, c.user, err, stderr.String())
 	}
 
 	return nil

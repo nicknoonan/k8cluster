@@ -193,6 +193,12 @@ func (a *App) runPowerOffOperation() {
 	ctx, cancel := context.WithTimeout(context.Background(), a.cfg.PowerOffTimeout)
 	defer cancel()
 
+	a.transitionOperation("VERIFYING_SSH", fmt.Sprintf("Verifying SSH access to %s as %s", a.cfg.TargetIP, a.cfg.SSHUser))
+	if err := a.ssh.Validate(ctx, a.cfg.TargetIP); err != nil {
+		a.failOperation(fmt.Errorf("verify ssh access to %s as %s: %w", a.cfg.TargetIP, a.cfg.SSHUser, err))
+		return
+	}
+
 	a.transitionOperation("SCALING_DOWN", "Scaling managed deployments to zero")
 	if err := a.kubernetes.SetManagedDeploymentsReplicas(ctx, a.cfg.ManagedDeployments, 0); err != nil {
 		a.failOperation(fmt.Errorf("scale managed deployments: %w", err))
