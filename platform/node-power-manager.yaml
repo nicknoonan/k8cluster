@@ -13,7 +13,7 @@ spec:
       releaseName: node-power-manager
       values: |
         image:
-          repository: ghcr.io/nicknoonan/k8cluster/platform
+          repository: ghcr.io/nicknoonan/k8cluster/node-power-manager
         config:
           targetNodeName: ""
           targetMacAddress: ""
