@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/ssh"
@@ -40,11 +41,11 @@ func NewSSHClient(user string, privateKey []byte) (*SSHClient, error) {
 }
 
 func (c *SSHClient) PowerOff(ctx context.Context, target string) error {
-	return c.runCommand(ctx, target, "sudo -n systemctl poweroff")
+	return c.runCommand(ctx, target, shutdownCommand(c.user))
 }
 
 func (c *SSHClient) Validate(ctx context.Context, target string) error {
-	return c.runCommand(ctx, target, "sudo -n true")
+	return c.runCommand(ctx, target, validationCommand(c.user))
 }
 
 func (c *SSHClient) runCommand(ctx context.Context, target, command string) error {
@@ -69,4 +70,20 @@ func (c *SSHClient) runCommand(ctx context.Context, target, command string) erro
 	}
 
 	return nil
+}
+
+func shutdownCommand(user string) string {
+	return privilegedShellCommand(user, "if command -v shutdown >/dev/null 2>&1; then shutdown now; else systemctl poweroff; fi")
+}
+
+func validationCommand(user string) string {
+	return privilegedShellCommand(user, "if command -v shutdown >/dev/null 2>&1 || command -v systemctl >/dev/null 2>&1; then true; else exit 1; fi")
+}
+
+func privilegedShellCommand(user, script string) string {
+	script = strings.ReplaceAll(script, `'`, `'\''`)
+	if user == "root" {
+		return fmt.Sprintf("sh -c '%s'", script)
+	}
+	return fmt.Sprintf("sudo -n sh -c '%s'", script)
 }
