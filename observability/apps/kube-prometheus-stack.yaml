@@ -26,6 +26,19 @@ spec:
           persistence:
             enabled: true
             size: 2Gi
+          ingress:
+            enabled: true
+            ingressClassName: traefik
+            annotations:
+              traefik.ingress.kubernetes.io/router.entrypoints: websecure
+              traefik.ingress.kubernetes.io/router.tls: "true"
+              cert-manager.io/cluster-issuer: letsencrypt-prod
+            hosts:
+              - grafana.nicknoonan.net
+            tls:
+              - secretName: grafana-tls
+                hosts:
+                  - grafana.nicknoonan.net
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: monitoring
