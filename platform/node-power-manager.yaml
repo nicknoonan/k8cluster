@@ -14,7 +14,7 @@ spec:
       values: |
         image:
           repository: ghcr.io/nicknoonan/k8cluster/node-power-manager
-          tag: sha-a5a6228
+          tag: sha-8ab5110
         config:
           targetNodeName: "bigboi"
           targetMacAddress: "00:d8:61:59:88:14"
