@@ -1,7 +1,4 @@
-const pollIntervals = {
-  idle: 10000,
-  active: 1500,
-};
+const pollIntervalMs = 10000;
 
 const state = {
   pollTimer: null,
@@ -30,24 +27,17 @@ function setButtonsDisabled(disabled) {
   document.getElementById('refresh').disabled = disabled;
 }
 
-function updateActionAvailability(operationInProgress) {
+function updateActionAvailability() {
   if (state.busy) {
     return;
   }
-  document.getElementById('power-on').disabled = operationInProgress;
-  document.getElementById('power-off').disabled = operationInProgress;
+  document.getElementById('power-on').disabled = false;
+  document.getElementById('power-off').disabled = false;
   document.getElementById('refresh').disabled = false;
 }
 
 function formatBoolean(value) {
   return value ? 'Yes' : 'No';
-}
-
-function formatTimestamp(value) {
-  if (!value) {
-    return '';
-  }
-  return new Date(value).toLocaleTimeString();
 }
 
 function renderBadge(element, text, variant) {
@@ -57,7 +47,8 @@ function renderBadge(element, text, variant) {
 
 function renderDeployments(deployments) {
   const container = document.getElementById('deployments');
-  if (!deployments.length) {
+  const safeDeployments = Array.isArray(deployments) ? deployments : [];
+  if (!safeDeployments.length) {
     container.textContent = 'No managed deployments configured.';
     container.className = 'muted';
     return;
@@ -66,77 +57,44 @@ function renderDeployments(deployments) {
   container.className = '';
   container.innerHTML = `
     <ul>
-      ${deployments
+      ${safeDeployments
         .map((deployment) => `<li><strong>${deployment.namespace}/${deployment.name}</strong> - replicas: ${deployment.replicas}</li>`)
         .join('')}
     </ul>
   `;
 }
 
-function renderOperation(operation) {
-  const badge = document.getElementById('operation-badge');
-  const message = document.getElementById('operation-message');
-  const error = document.getElementById('operation-error');
-  const events = document.getElementById('operation-events');
-
-  if (!operation) {
-    renderBadge(badge, 'Idle', '');
-    message.textContent = 'No operation is running.';
-    error.textContent = '';
-    events.innerHTML = '';
-    return;
-  }
-
-  renderBadge(
-    badge,
-    `${operation.kind} - ${operation.phase}`,
-    operation.inProgress ? 'running' : operation.error ? 'offline' : 'ready',
-  );
-  message.textContent = operation.message;
-  error.textContent = operation.error || '';
-  events.innerHTML = operation.events
-    .slice()
-    .reverse()
-    .map(
-      (event) => `
-        <li>
-          <span class="timestamp">${formatTimestamp(event.at)}</span>
-          <span>${event.message}</span>
-        </li>`,
-    )
-    .join('');
-}
-
 function renderStatus(status) {
+  const node = status?.node || {};
+  const addresses = Array.isArray(node.addresses) ? node.addresses : [];
   const variant = status.phase === 'READY' ? 'ready' : status.phase === 'OFFLINE' ? 'offline' : 'running';
   renderBadge(document.getElementById('phase-badge'), status.phase, variant);
-  document.getElementById('node-name').textContent = status.node.name || '-';
-  document.getElementById('node-exists').textContent = formatBoolean(status.node.exists);
-  document.getElementById('node-ready').textContent = formatBoolean(status.node.ready);
-  document.getElementById('node-cordoned').textContent = formatBoolean(status.node.cordoned);
-  document.getElementById('node-addresses').textContent = status.node.addresses.length ? status.node.addresses.join(', ') : '-';
+  document.getElementById('node-name').textContent = node.name || '-';
+  document.getElementById('node-exists').textContent = formatBoolean(node.exists);
+  document.getElementById('node-ready').textContent = formatBoolean(node.ready);
+  document.getElementById('node-cordoned').textContent = formatBoolean(node.cordoned);
+  document.getElementById('node-addresses').textContent = addresses.length ? addresses.join(', ') : '-';
   renderDeployments(status.deployments);
-  renderOperation(status.operation);
-  updateActionAvailability(Boolean(status.operation?.inProgress));
+  updateActionAvailability();
 }
 
-function scheduleRefresh(operationInProgress) {
+function scheduleRefresh() {
   clearTimeout(state.pollTimer);
   state.pollTimer = setTimeout(() => {
     refresh({ quiet: true }).catch((error) => {
       setFeedback(error.message, true);
-      scheduleRefresh(false);
+      scheduleRefresh();
     });
-  }, operationInProgress ? pollIntervals.active : pollIntervals.idle);
+  }, pollIntervalMs);
 }
 
 async function refresh(options = {}) {
   const status = await request('/api/status');
   renderStatus(status);
   if (!options.quiet) {
-    setFeedback(status.operation?.inProgress ? 'Shutdown in progress...' : 'Status updated.');
+    setFeedback('Status updated.');
   }
-  scheduleRefresh(Boolean(status.operation?.inProgress));
+  scheduleRefresh();
   return status;
 }
 
@@ -157,10 +115,8 @@ document.getElementById('power-off').addEventListener('click', async () => {
   try {
     setButtonsDisabled(true);
     setFeedback('Starting node shutdown...');
-    const operation = await request('/api/power/off');
-    renderOperation(operation);
-    setFeedback(operation.message || 'Shutdown requested.');
-    await refresh({ quiet: true });
+    await request('/api/power/off');
+    await refresh();
   } catch (error) {
     setFeedback(error.message, true);
   } finally {

@@ -90,23 +90,6 @@
       margin: .75rem 0 0;
       padding-left: 1.25rem;
     }
-    .events {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      gap: .75rem;
-    }
-    .events li {
-      border-left: 3px solid #2563eb;
-      padding-left: .75rem;
-    }
-    .timestamp {
-      display: block;
-      color: #94a3b8;
-      font-size: .8rem;
-      margin-bottom: .15rem;
-    }
     .muted {
       color: #94a3b8;
     }
@@ -147,13 +130,6 @@
       <div id="deployments" class="muted">Loading deployments...</div>
     </section>
   </div>
-  <section class="card">
-    <h2>Current operation</h2>
-    <p><span id="operation-badge" class="badge">Idle</span></p>
-    <p id="operation-message" class="muted">No operation is running.</p>
-    <div id="operation-error" class="error"></div>
-    <ol id="operation-events" class="events"></ol>
-  </section>
   <script src="/app.js"></script>
 </body>
 </html>
