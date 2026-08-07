@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: 'https://github.com/nicknoonan/k8cluster.git'
     targetRevision: HEAD
-    path: platform/charts/node-power-manager
+    path: node-power-manager/charts/node-power-manager
     helm:
       releaseName: node-power-manager
       values: |
