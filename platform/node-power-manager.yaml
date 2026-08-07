@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: node-power-manager
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/nicknoonan/k8cluster.git'
+    targetRevision: HEAD
+    path: platform/charts/node-power-manager
+    helm:
+      releaseName: node-power-manager
+      values: |
+        image:
+          repository: ghcr.io/nicknoonan/k8cluster/platform
+        config:
+          targetNodeName: ""
+          targetMacAddress: ""
+          targetIp: ""
+          sshSecretName: node-power-manager-ssh
+          managedDeployments: []
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: management
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
