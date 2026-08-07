@@ -1,17 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: root
+  name: certs
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: 'https://github.com/nicknoonan/k8cluster.git'
     targetRevision: HEAD
-    path: .
-    directory:
-      recurse: true
-      include: '{observability/observability.yaml,node-power-manager/node-power-manager.yaml,certs/certs.yaml}'
+    path: certs/apps
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: argocd
