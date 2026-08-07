@@ -18,7 +18,7 @@ spec:
         config:
           targetNodeName: "bigboi"
           targetMacAddress: "00:d8:61:59:88:14"
-          targetIp: "192.168.1.111"
+          targetIp: "192.168.1.112"
           sshSecretName: node-power-manager-ssh
           managedDeployments: []
   destination:
