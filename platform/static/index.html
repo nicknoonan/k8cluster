@@ -5,21 +5,155 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Node Power Manager</title>
   <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 60rem; }
-    button { margin-right: .5rem; padding: .75rem 1rem; }
-    pre { background: #111; color: #0f0; padding: 1rem; overflow: auto; }
+    :root {
+      color-scheme: dark;
+      font-family: system-ui, sans-serif;
+    }
+    body {
+      margin: 2rem auto;
+      max-width: 72rem;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 0 1rem 2rem;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem;
+      margin-bottom: 1.5rem;
+    }
+    button {
+      padding: .75rem 1rem;
+      border: 0;
+      border-radius: .75rem;
+      background: #2563eb;
+      color: #eff6ff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #334155;
+    }
+    button:disabled {
+      opacity: .5;
+      cursor: wait;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .card {
+      background: #111827;
+      border: 1px solid #1e293b;
+      border-radius: 1rem;
+      padding: 1rem;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, .35);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: .2rem .65rem;
+      font-size: .85rem;
+      font-weight: 700;
+      background: #1e293b;
+      color: #bfdbfe;
+    }
+    .badge.running {
+      background: #172554;
+      color: #93c5fd;
+    }
+    .badge.ready {
+      background: #14532d;
+      color: #bbf7d0;
+    }
+    .badge.offline {
+      background: #3f1d1d;
+      color: #fecaca;
+    }
+    dl {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: .5rem .75rem;
+      margin: 0;
+    }
+    dt {
+      color: #94a3b8;
+    }
+    dd {
+      margin: 0;
+      font-weight: 600;
+    }
+    ul {
+      margin: .75rem 0 0;
+      padding-left: 1.25rem;
+    }
+    .events {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: .75rem;
+    }
+    .events li {
+      border-left: 3px solid #2563eb;
+      padding-left: .75rem;
+    }
+    .timestamp {
+      display: block;
+      color: #94a3b8;
+      font-size: .8rem;
+      margin-bottom: .15rem;
+    }
+    .muted {
+      color: #94a3b8;
+    }
+    .error {
+      color: #fca5a5;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
   <h1>Node Power Manager</h1>
   <p>Control the managed node and its workloads.</p>
-  <div>
+  <div class="actions">
     <button id="power-on">Power on</button>
     <button id="power-off">Power off</button>
-    <button id="refresh">Refresh status</button>
+    <button id="refresh" class="secondary">Refresh status</button>
   </div>
-  <h2>Status</h2>
-  <pre id="status">loading...</pre>
+  <p id="feedback" class="muted">Loading status...</p>
+  <div class="grid">
+    <section class="card">
+      <h2>Cluster status</h2>
+      <p><span id="phase-badge" class="badge">Unknown</span></p>
+      <dl>
+        <dt>Node</dt>
+        <dd id="node-name">-</dd>
+        <dt>Present</dt>
+        <dd id="node-exists">-</dd>
+        <dt>Ready</dt>
+        <dd id="node-ready">-</dd>
+        <dt>Cordoned</dt>
+        <dd id="node-cordoned">-</dd>
+        <dt>Addresses</dt>
+        <dd id="node-addresses">-</dd>
+      </dl>
+    </section>
+    <section class="card">
+      <h2>Managed deployments</h2>
+      <div id="deployments" class="muted">Loading deployments...</div>
+    </section>
+  </div>
+  <section class="card">
+    <h2>Current operation</h2>
+    <p><span id="operation-badge" class="badge">Idle</span></p>
+    <p id="operation-message" class="muted">No operation is running.</p>
+    <div id="operation-error" class="error"></div>
+    <ol id="operation-events" class="events"></ol>
+  </section>
   <script src="/app.js"></script>
 </body>
 </html>

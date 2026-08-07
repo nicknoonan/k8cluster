@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -19,6 +20,12 @@ import (
 
 type Client struct {
 	client kubernetes.Interface
+}
+
+type DrainOptions struct {
+	GracePeriod  time.Duration
+	PollInterval time.Duration
+	Reporter     func(message string)
 }
 
 type NodeInfo struct {
@@ -124,14 +131,25 @@ func (c *Client) setDeploymentReplicas(ctx context.Context, namespace, name stri
 	return nil
 }
 
-func (c *Client) CordonAndDrain(ctx context.Context, nodeName string) error {
+func (c *Client) CordonAndDrain(ctx context.Context, nodeName string, options DrainOptions) error {
 	if c == nil || c.client == nil {
 		return errors.New("kubernetes client not configured")
+	}
+
+	gracePeriod := options.GracePeriod
+	if gracePeriod <= 0 {
+		gracePeriod = 30 * time.Second
+	}
+
+	pollInterval := options.PollInterval
+	if pollInterval <= 0 {
+		pollInterval = 2 * time.Second
 	}
 
 	if err := c.cordonNode(ctx, nodeName); err != nil {
 		return err
 	}
+	reportDrainEvent(options.Reporter, "Cordoned node %s", nodeName)
 
 	pods, err := c.client.CoreV1().Pods(metav1.NamespaceAll).List(ctx, metav1.ListOptions{
 		FieldSelector: "spec.nodeName=" + nodeName,
@@ -140,22 +158,111 @@ func (c *Client) CordonAndDrain(ctx context.Context, nodeName string) error {
 		return err
 	}
 
+	graceSeconds := int64(gracePeriod / time.Second)
+	if graceSeconds < 1 {
+		graceSeconds = 1
+	}
+
+	drainablePods := make([]corev1.Pod, 0, len(pods.Items))
 	for _, pod := range pods.Items {
 		if isDaemonSetPod(&pod) {
+			reportDrainEvent(options.Reporter, "Skipping DaemonSet pod %s/%s", pod.Namespace, pod.Name)
 			continue
 		}
+		drainablePods = append(drainablePods, pod)
+	}
 
+	if len(drainablePods) == 0 {
+		reportDrainEvent(options.Reporter, "No drainable pods remain on node %s", nodeName)
+	} else {
+		reportDrainEvent(options.Reporter, "Evicting %d pod(s) from node %s with %d second grace", len(drainablePods), nodeName, graceSeconds)
+	}
+
+	for _, pod := range drainablePods {
+		reportDrainEvent(options.Reporter, "Evicting pod %s/%s", pod.Namespace, pod.Name)
 		eviction := &policyv1.Eviction{
 			ObjectMeta: metav1.ObjectMeta{Name: pod.Name, Namespace: pod.Namespace},
 			DeleteOptions: &metav1.DeleteOptions{
-				GracePeriodSeconds: pointer64(30),
+				GracePeriodSeconds: pointer64(graceSeconds),
 			},
 		}
 		if err := c.client.PolicyV1().Evictions(pod.Namespace).Evict(ctx, eviction); err != nil {
 			return fmt.Errorf("evict pod %s/%s: %w", pod.Namespace, pod.Name, err)
 		}
 	}
+
+	remainingPods, err := c.waitForPodsToDrain(ctx, nodeName, gracePeriod, pollInterval, options.Reporter)
+	if err != nil {
+		return err
+	}
+
+	if len(remainingPods) > 0 {
+		reportDrainEvent(options.Reporter, "Force deleting %d remaining pod(s) on node %s", len(remainingPods), nodeName)
+		for _, pod := range remainingPods {
+			reportDrainEvent(options.Reporter, "Force deleting pod %s/%s", pod.Namespace, pod.Name)
+			if err := c.client.CoreV1().Pods(pod.Namespace).Delete(ctx, pod.Name, metav1.DeleteOptions{
+				GracePeriodSeconds: pointer64(0),
+			}); err != nil && !apierrors.IsNotFound(err) {
+				return fmt.Errorf("force delete pod %s/%s: %w", pod.Namespace, pod.Name, err)
+			}
+		}
+	}
+
+	reportDrainEvent(options.Reporter, "Deleting node %s from cluster", nodeName)
+	if err := c.client.CoreV1().Nodes().Delete(ctx, nodeName, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		return fmt.Errorf("delete node %s: %w", nodeName, err)
+	}
+	reportDrainEvent(options.Reporter, "Deleted node %s from cluster", nodeName)
 	return nil
+}
+
+func (c *Client) waitForPodsToDrain(ctx context.Context, nodeName string, gracePeriod, pollInterval time.Duration, reporter func(string)) ([]corev1.Pod, error) {
+	deadline := time.Now().Add(gracePeriod)
+	ticker := time.NewTicker(pollInterval)
+	defer ticker.Stop()
+
+	for {
+		pods, err := c.listDrainablePods(ctx, nodeName)
+		if err != nil {
+			return nil, err
+		}
+		if len(pods) == 0 {
+			reportDrainEvent(reporter, "All drainable pods removed from node %s", nodeName)
+			return nil, nil
+		}
+
+		if time.Now().After(deadline) {
+			reportDrainEvent(reporter, "Drain grace expired with %d pod(s) still on node %s", len(pods), nodeName)
+			return pods, nil
+		}
+
+		reportDrainEvent(reporter, "Waiting for %d pod(s) to leave node %s", len(pods), nodeName)
+
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-ticker.C:
+		}
+	}
+}
+
+func (c *Client) listDrainablePods(ctx context.Context, nodeName string) ([]corev1.Pod, error) {
+	pods, err := c.client.CoreV1().Pods(metav1.NamespaceAll).List(ctx, metav1.ListOptions{
+		FieldSelector: "spec.nodeName=" + nodeName,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	drainablePods := make([]corev1.Pod, 0, len(pods.Items))
+	for _, pod := range pods.Items {
+		if isDaemonSetPod(&pod) {
+			continue
+		}
+		drainablePods = append(drainablePods, pod)
+	}
+
+	return drainablePods, nil
 }
 
 func (c *Client) cordonNode(ctx context.Context, nodeName string) error {
@@ -193,3 +300,10 @@ func isDaemonSetPod(pod *corev1.Pod) bool {
 func pointer(value int32) *int32 { return &value }
 
 func pointer64(value int64) *int64 { return &value }
+
+func reportDrainEvent(reporter func(string), format string, args ...any) {
+	if reporter == nil {
+		return
+	}
+	reporter(fmt.Sprintf(format, args...))
+}

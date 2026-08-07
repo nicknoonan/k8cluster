@@ -162,3 +162,4 @@ spec:
 ## Current progress
 
 - The release workflow should now read `version` and `appVersion` from `charts/node-power-manager/Chart.yaml` when packaging the chart.
+- ArgoCD application manifests are being added for the platform chart and the repo root app-of-apps entrypoint.
