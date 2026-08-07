@@ -23,4 +23,9 @@ config:
   sshSecretName: node-power-manager-ssh
   managedDeployments: []
 
+ingress:
+  enabled: false
+  host: ""
+  tlsSecretName: ""
+
 resources: {}

@@ -24,6 +24,10 @@ spec:
           sshShutdownCommand: "sudo shutdown now"
           sshSecretName: node-power-manager-ssh
           managedDeployments: []
+        ingress:
+          enabled: true
+          host: "node-power-manager.nicknoonan.net"
+          tlsSecretName: "node-power-manager-tls"
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: management
