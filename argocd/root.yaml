@@ -11,10 +11,7 @@ spec:
     path: .
     directory:
       recurse: true
-      include: |
-        observability/observability.yaml
-        node-power-manager/node-power-manager.yaml
-        cert-manager/cert-manager.yaml
+      include: '{observability/observability.yaml,node-power-manager/node-power-manager.yaml,cert-manager/cert-manager.yaml}'
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: argocd
