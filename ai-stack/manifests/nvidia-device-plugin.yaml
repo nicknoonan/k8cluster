@@ -16,6 +16,8 @@ spec:
       - key: nvidia.com/gpu
         operator: Exists
         effect: NoSchedule
+      - key: CriticalAddonsOnly
+        operator: Exists
       - key: bigboi
         operator: Exists
         effect: NoSchedule
@@ -29,17 +31,12 @@ spec:
         volumeMounts:
         - name: device-plugin
           mountPath: /var/lib/kubelet/device-plugins
-        - name: containerd-socket
-          mountPath: /run/containerd/containerd.sock
-        - name: toolkit-path
-          mountPath: /usr/bin/nvidia-ctk
+        - name: driver-root
+          mountPath: /driver-root
       volumes:
       - name: device-plugin
         hostPath:
           path: /var/lib/kubelet/device-plugins
-      - name: containerd-socket
+      - name: driver-root
         hostPath:
-          path: /run/containerd/containerd.sock
-      - name: toolkit-path
-        hostPath:
-          path: /usr/bin/nvidia-ctk
+          path: /
