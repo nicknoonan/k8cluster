@@ -24,6 +24,21 @@ spec:
         volumeMounts:
         - name: webui-storage
           mountPath: /app/backend/data
+      volumes:
+      - name: webui-storage
+        persistentVolumeClaim:
+          claimName: open-webui-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: open-webui-pvc
+  namespace: ai-local
+spec:
+  accessModes: [ "ReadWriteOnce" ]
+  resources:
+    requests:
+      storage: 5Gi
 ---
 apiVersion: v1
 kind: Service
