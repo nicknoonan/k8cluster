@@ -73,7 +73,7 @@ spec:
             - name: TYPE
               value: VANILLA
             - name: VERSION
-              value: "26.2"
+              value: "26.1"
           readinessProbe:
             tcpSocket:
               port: minecraft

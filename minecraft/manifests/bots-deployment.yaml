@@ -40,7 +40,7 @@ spec:
             - name: BOT_ROLE
               value: wander
             - name: MC_VERSION
-              value: "26.2"
+              value: "26.1"
           resources:
             requests:
               cpu: 50m
@@ -84,7 +84,7 @@ spec:
             - name: BOT_ROLE
               value: follow
             - name: MC_VERSION
-              value: "26.2"
+              value: "26.1"
           resources:
             requests:
               cpu: 50m
@@ -128,7 +128,7 @@ spec:
             - name: BOT_ROLE
               value: farm
             - name: MC_VERSION
-              value: "26.2"
+              value: "26.1"
           resources:
             requests:
               cpu: 50m
@@ -172,7 +172,7 @@ spec:
             - name: BOT_ROLE
               value: combat
             - name: MC_VERSION
-              value: "26.2"
+              value: "26.1"
           resources:
             requests:
               cpu: 50m
