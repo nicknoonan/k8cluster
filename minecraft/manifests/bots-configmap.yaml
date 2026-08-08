@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minecraft-bots
+  namespace: minecraft
+# Each entry defines one bot. Key = bot username, Value = role.
+# Supported roles: wander | follow | farm | combat
+# Add or remove entries here and ArgoCD will reconcile the bots Deployment.
+data:
+  bots.env: |
+    Wanderer=wander
+    Companion=follow
+    Farmer=farm
+    Guard=combat

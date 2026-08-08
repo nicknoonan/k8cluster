@@ -1,0 +1,174 @@
+# Each bot runs as its own Deployment so it can be scaled and restarted independently.
+# To add a bot: copy one block, change the name/username/role, and commit.
+# To remove a bot: delete its block. ArgoCD will prune the Deployment automatically.
+# Image is built and pushed by .github/workflows/minecraft-bot.yml.
+#
+# Bot image tag: update BOT_IMAGE_TAG in this file or pin it per-bot.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft-bot-wanderer
+  namespace: minecraft
+  labels:
+    app.kubernetes.io/name: minecraft-bot
+    minecraft-bot/role: wander
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: minecraft-bot-wanderer
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: minecraft-bot
+        app.kubernetes.io/instance: minecraft-bot-wanderer
+        minecraft-bot/role: wander
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: bot
+          image: ghcr.io/nicknoonan/minecraft-bot:latest
+          imagePullPolicy: Always
+          env:
+            - name: MC_HOST
+              value: minecraft-headless.minecraft.svc.cluster.local
+            - name: MC_PORT
+              value: "25565"
+            - name: BOT_USERNAME
+              value: Wanderer
+            - name: BOT_ROLE
+              value: wander
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft-bot-companion
+  namespace: minecraft
+  labels:
+    app.kubernetes.io/name: minecraft-bot
+    minecraft-bot/role: follow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: minecraft-bot-companion
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: minecraft-bot
+        app.kubernetes.io/instance: minecraft-bot-companion
+        minecraft-bot/role: follow
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: bot
+          image: ghcr.io/nicknoonan/minecraft-bot:latest
+          imagePullPolicy: Always
+          env:
+            - name: MC_HOST
+              value: minecraft-headless.minecraft.svc.cluster.local
+            - name: MC_PORT
+              value: "25565"
+            - name: BOT_USERNAME
+              value: Companion
+            - name: BOT_ROLE
+              value: follow
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft-bot-farmer
+  namespace: minecraft
+  labels:
+    app.kubernetes.io/name: minecraft-bot
+    minecraft-bot/role: farm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: minecraft-bot-farmer
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: minecraft-bot
+        app.kubernetes.io/instance: minecraft-bot-farmer
+        minecraft-bot/role: farm
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: bot
+          image: ghcr.io/nicknoonan/minecraft-bot:latest
+          imagePullPolicy: Always
+          env:
+            - name: MC_HOST
+              value: minecraft-headless.minecraft.svc.cluster.local
+            - name: MC_PORT
+              value: "25565"
+            - name: BOT_USERNAME
+              value: Farmer
+            - name: BOT_ROLE
+              value: farm
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minecraft-bot-guard
+  namespace: minecraft
+  labels:
+    app.kubernetes.io/name: minecraft-bot
+    minecraft-bot/role: combat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: minecraft-bot-guard
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: minecraft-bot
+        app.kubernetes.io/instance: minecraft-bot-guard
+        minecraft-bot/role: combat
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: bot
+          image: ghcr.io/nicknoonan/minecraft-bot:latest
+          imagePullPolicy: Always
+          env:
+            - name: MC_HOST
+              value: minecraft-headless.minecraft.svc.cluster.local
+            - name: MC_PORT
+              value: "25565"
+            - name: BOT_USERNAME
+              value: Guard
+            - name: BOT_ROLE
+              value: combat
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi

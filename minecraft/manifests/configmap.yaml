@@ -8,8 +8,8 @@ data:
     motd=Kubernetes Minecraft Server
     difficulty=normal
     gamemode=survival
-    max-players=10
+    max-players=20
     enable-command-block=true
-    online-mode=true
+    online-mode=false
     view-distance=10
     simulation-distance=10
