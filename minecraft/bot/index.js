@@ -149,34 +149,148 @@ function startWander(bot) {
   wanderLoop().catch(err => console.error(`[${bot.username}] Wander loop died:`, err.message));
 }
 
-// ── Follow behavior ───────────────────────────────────────────────────────────
-// GoalFollow with dynamic=true: pathfinder tracks the moving entity each tick.
-// goal_reached is NOT emitted for dynamic goals — that's correct behavior.
+// ── Follow/Companion behavior ─────────────────────────────────────────────────
+// Follows nearest player and actively:
+//  • Defends against nearby hostiles
+//  • Picks up nearby dropped loot
+//  • Places torches in dark areas
+//  • Warns about nearby dangers in chat
 function startFollow(bot) {
+  const HOSTILE = new Set([
+    'zombie', 'skeleton', 'spider', 'cave_spider', 'creeper', 'enderman',
+    'witch', 'pillager', 'vindicator', 'evoker', 'phantom', 'drowned',
+    'husk', 'stray', 'slime', 'magma_cube', 'blaze', 'ghast',
+    'wither_skeleton', 'zombified_piglin', 'hoglin', 'piglin_brute', 'ravager',
+  ]);
+
+  let defending = false;
+  let lastDangerWarn = 0;
+  let lastHealthWarn = {};
+
+  // ── Pathfind to nearest player ──────────────────────────────────────────
   setInterval(() => {
-    if (!bot.entity) return;
+    if (!bot.entity || defending) return;
 
     let nearest = null;
     let nearestDist = Infinity;
-
     for (const p of Object.values(bot.players)) {
       if (!p.entity || p.username === bot.username) continue;
       const d = bot.entity.position.distanceTo(p.entity.position);
       if (d < nearestDist) { nearestDist = d; nearest = p; }
     }
 
-    if (!nearest) {
-      bot.pathfinder.stop();
-      return;
-    }
+    if (!nearest) { bot.pathfinder.stop(); return; }
 
-    // Only update goal if outside follow range to avoid constant path resets
     if (nearestDist > 4) {
       bot.pathfinder.setGoal(new GoalFollow(nearest.entity, 3), true);
     } else {
       bot.pathfinder.stop();
     }
   }, 1000);
+
+  // ── Defend: attack hostiles within 10 blocks of any player ─────────────
+  bot.on('physicsTick', () => {
+    if (defending || !bot.entity) return;
+
+    // Find hostile mob near any human player
+    let target = null;
+    let targetDist = Infinity;
+    for (const e of Object.values(bot.entities)) {
+      if (e.type !== 'mob' || !e.name || !HOSTILE.has(e.name.toLowerCase())) continue;
+      // Check if it's close to the bot or any player
+      const distToBot = bot.entity.position.distanceTo(e.position);
+      if (distToBot < 12 && distToBot < targetDist) {
+        targetDist = distToBot;
+        target = e;
+      }
+    }
+    if (!target) return;
+
+    defending = true;
+    bot.pathfinder.stop();
+    fightMob(bot, target, HOSTILE)
+      .catch(err => console.warn(`[${bot.username}] Defend error: ${err.message}`))
+      .finally(() => { defending = false; });
+  });
+
+  // ── Loot: pick up nearby dropped items ─────────────────────────────────
+  setInterval(() => {
+    if (defending || !bot.entity) return;
+    const item = bot.nearestEntity(e =>
+      e.name === 'item' &&
+      bot.entity.position.distanceTo(e.position) < 6
+    );
+    if (item) {
+      bot.pathfinder.setGoal(new GoalNear(
+        item.position.x, item.position.y, item.position.z, 1
+      ), true);
+    }
+  }, 2000);
+
+  // ── Torch: place torch if standing in dark spot ─────────────────────────
+  setInterval(async () => {
+    if (defending || !bot.entity) return;
+    const light = bot.world.getLight(bot.entity.position.floored());
+    if (light > 7) return; // bright enough
+
+    const torch = bot.inventory.items().find(i =>
+      i.name === 'torch' || i.name === 'soul_torch'
+    );
+    if (!torch) return;
+
+    // Find a solid block below feet to place torch on
+    const below = bot.blockAt(bot.entity.position.offset(0, -1, 0));
+    if (!below || below.name === 'air') return;
+
+    try {
+      await bot.equip(torch, 'hand');
+      await bot.placeBlock(below, new (require('vec3'))(0, 1, 0));
+    } catch (_) { /* surface may not be valid */ }
+  }, 5000);
+
+  // ── Danger warnings: alert players to nearby threats ───────────────────
+  setInterval(() => {
+    if (!bot.entity) return;
+    const now = Date.now();
+    if (now - lastDangerWarn < 15_000) return; // throttle warnings to every 15s
+
+    // Mob danger
+    const nearMob = bot.nearestEntity(e =>
+      e.type === 'mob' && !!e.name && HOSTILE.has(e.name.toLowerCase()) &&
+      bot.entity.position.distanceTo(e.position) < 16
+    );
+    if (nearMob) {
+      bot.chat(`⚠ ${nearMob.name} nearby!`);
+      lastDangerWarn = now;
+      return;
+    }
+
+    // Lava/fire danger
+    const DANGER_BLOCKS = new Set(['lava', 'flowing_lava', 'fire']);
+    const dangerBlock = bot.findBlock({
+      matching: b => DANGER_BLOCKS.has(b.name),
+      maxDistance: 5,
+    });
+    if (dangerBlock) {
+      bot.chat('⚠ Danger: lava or fire nearby!');
+      lastDangerWarn = now;
+      return;
+    }
+
+    // Player low health warning
+    for (const p of Object.values(bot.players)) {
+      if (!p.entity || p.username === bot.username) continue;
+      // bot can only see its own health via bot.health; player health not exposed
+      // Instead warn if bot itself is low
+    }
+  }, 3000);
+
+  // ── Self health warning ─────────────────────────────────────────────────
+  bot.on('health', () => {
+    if (bot.health <= 6) {
+      bot.chat(`I'm hurt! Health: ${bot.health.toFixed(1)} ❤`);
+    }
+  });
 }
 
 // ── Farm behavior ─────────────────────────────────────────────────────────────
