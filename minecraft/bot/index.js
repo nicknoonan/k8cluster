@@ -38,6 +38,15 @@ function createBot() {
     movements.canDig = false; // don't grief player builds
     bot.pathfinder.setMovements(movements);
 
+    bot.on('path_update', (r) => {
+      if (r.status !== 'in_progress') {
+        console.log(`[${USERNAME}] path_update status=${r.status} path_len=${r.path?.length ?? 0}`);
+      }
+    });
+    bot.on('goal_reached', () => console.log(`[${USERNAME}] goal_reached`));
+    bot.on('path_reset',   (r) => console.log(`[${USERNAME}] path_reset reason=${r}`));
+    bot.on('path_stop',    ()  => console.log(`[${USERNAME}] path_stop`));
+
     switch (ROLE) {
       case 'wander': startWander(bot); break;
       case 'follow': startFollow(bot); break;
@@ -119,13 +128,12 @@ function startWander(bot) {
       const x = Math.floor(bot.entity.position.x + (Math.random() - 0.5) * RADIUS * 2);
       const z = Math.floor(bot.entity.position.z + (Math.random() - 0.5) * RADIUS * 2);
 
+      console.log(`[${bot.username}] Wandering to ${x}, ${z}`);
       try {
         await bot.pathfinder.goto(new GoalXZ(x, z));
+        console.log(`[${bot.username}] Reached wander target`);
       } catch (err) {
-        // NoPath / Timeout are expected on complex terrain — just pick a new spot
-        if (!['NoPath', 'Timeout', 'GoalChanged', 'PathStopped'].includes(err.name)) {
-          console.warn(`[${bot.username}] Wander error: ${err.message}`);
-        }
+        console.log(`[${bot.username}] Wander goto error: name=${err.name} msg=${err.message}`);
       }
       await sleep(1000 + Math.random() * 4000);
     }
