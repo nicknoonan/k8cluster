@@ -28,7 +28,7 @@ spec:
       restartPolicy: Always
       containers:
         - name: bot
-          image: ghcr.io/nicknoonan/minecraft-bot:sha-6997f46
+          image: ghcr.io/nicknoonan/minecraft-bot:latest
           imagePullPolicy: Always
           env:
             - name: MC_HOST
