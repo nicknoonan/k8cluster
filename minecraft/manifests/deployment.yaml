@@ -26,6 +26,9 @@ spec:
       initContainers:
         - name: stage-server-properties
           image: busybox:1.36
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
           command:
             - sh
             - -c
