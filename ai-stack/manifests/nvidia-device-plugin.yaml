@@ -24,6 +24,8 @@ spec:
       containers:
       - image: nvcr.io/nvidia/k8s-device-plugin:v0.17.1
         name: nvidia-device-plugin-ctr
+        args:
+          - "--device-discovery-strategy=nvml"
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -33,6 +35,8 @@ spec:
           mountPath: /var/lib/kubelet/device-plugins
         - name: driver-root
           mountPath: /driver-root
+        - name: nvidia-dev
+          mountPath: /dev
       volumes:
       - name: device-plugin
         hostPath:
@@ -40,3 +44,8 @@ spec:
       - name: driver-root
         hostPath:
           path: /
+      - name: nvidia-dev
+        hostPath:
+          path: /dev
+  updateStrategy:
+    type: RollingUpdate
