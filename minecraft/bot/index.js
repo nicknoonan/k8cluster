@@ -2,7 +2,332 @@
 
 const mineflayer = require('mineflayer');
 const { pathfinder, Movements, goals } = require('mineflayer-pathfinder');
-const { GoalNear, GoalFollow, GoalBlock, GoalXZ } = goals;
+const { GoalNear, GoalFollow, GoalGetToBlock, GoalXZ } = goals;
+
+// ── Configuration ────────────────────────────────────────────────────────────
+const HOST       = process.env.MC_HOST     || 'minecraft.minecraft.svc.cluster.local';
+const PORT       = parseInt(process.env.MC_PORT || '25565', 10);
+const USERNAME   = process.env.BOT_USERNAME || 'Bot';
+const ROLE       = (process.env.BOT_ROLE   || 'wander').toLowerCase();
+const MC_VERSION = process.env.MC_VERSION  || '1.21.11';
+
+const RECONNECT_BASE_MS = 10_000;
+const RECONNECT_MAX_MS  = 120_000;
+let   reconnectDelay    = RECONNECT_BASE_MS;
+
+console.log(`[${USERNAME}] Starting with role="${ROLE}" → ${HOST}:${PORT}`);
+
+// ── Bot lifecycle ─────────────────────────────────────────────────────────────
+function createBot() {
+  const bot = mineflayer.createBot({
+    host: HOST,
+    port: PORT,
+    username: USERNAME,
+    version: MC_VERSION,
+    auth: 'offline',
+  });
+
+  bot.loadPlugin(pathfinder);
+
+  bot.once('spawn', () => {
+    reconnectDelay = RECONNECT_BASE_MS;
+    console.log(`[${USERNAME}] Spawned. Role: ${ROLE}`);
+
+    const movements = new Movements(bot);
+    movements.allowSprinting = true;
+    movements.canDig = false; // don't grief player builds
+    bot.pathfinder.setMovements(movements);
+
+    switch (ROLE) {
+      case 'wander': startWander(bot); break;
+      case 'follow': startFollow(bot); break;
+      case 'farm':   startFarm(bot);   break;
+      case 'combat': startCombat(bot); break;
+      default:
+        console.warn(`[${USERNAME}] Unknown role "${ROLE}", defaulting to wander`);
+        startWander(bot);
+    }
+  });
+
+  bot.on('chat', (sender, message) => {
+    if (sender === bot.username) return;
+    handleChat(bot, sender, message).catch(err =>
+      console.error(`[${bot.username}] Chat handler error:`, err.message)
+    );
+  });
+
+  bot.on('error', (err) => {
+    if (err.code !== 'ECONNREFUSED') {
+      console.error(`[${USERNAME}] Error:`, err.message);
+    }
+  });
+
+  bot.on('end', (reason) => {
+    console.log(`[${USERNAME}] Disconnected (${reason}). Reconnecting in ${reconnectDelay / 1000}s…`);
+    const delay = reconnectDelay;
+    reconnectDelay = Math.min(reconnectDelay * 2, RECONNECT_MAX_MS);
+    setTimeout(createBot, delay);
+  });
+}
+
+// ── Chat handler ──────────────────────────────────────────────────────────────
+async function handleChat(bot, sender, message) {
+  const lower = message.toLowerCase().trim();
+
+  if (lower.includes(bot.username.toLowerCase())) {
+    bot.chat(`Hi ${sender}! I'm the ${ROLE} bot. Type !help for commands.`);
+    return;
+  }
+  switch (true) {
+    case lower === '!help':
+      bot.chat('Commands: !come  !follow <name>  !stop  !attack <name>  !roles');
+      break;
+    case lower === '!roles':
+      bot.chat('Roles: wander | follow | farm | combat');
+      break;
+    case lower === '!stop':
+      bot.pathfinder.stop();
+      bot.chat('Stopped.');
+      break;
+    case lower === '!come':
+      await cmdFollow(bot, sender);
+      break;
+    case lower.startsWith('!follow '):
+      await cmdFollow(bot, message.split(' ')[1]);
+      break;
+    case lower.startsWith('!attack '):
+      cmdAttack(bot, message.split(' ')[1]);
+      break;
+  }
+}
+
+// ── Wander behavior ───────────────────────────────────────────────────────────
+// Uses goto() (Promise-based) so each wander leg properly completes or
+// times out before the next one begins. GoalXZ lets the pathfinder pick Y.
+function startWander(bot) {
+  const RADIUS = 48;
+  const QUOTES = [
+    'Just exploring!', 'Have you tried punching a tree?', 'Creepers? Aww man.',
+    'Looking for diamonds…', 'This is fine. 🔥', 'Found any good caves lately?',
+    'I love this place.', 'Watch out for Endermen!',
+  ];
+
+  async function wanderLoop() {
+    while (true) {
+      if (!bot.entity) { await sleep(2000); continue; }
+
+      const x = Math.floor(bot.entity.position.x + (Math.random() - 0.5) * RADIUS * 2);
+      const z = Math.floor(bot.entity.position.z + (Math.random() - 0.5) * RADIUS * 2);
+
+      try {
+        await bot.pathfinder.goto(new GoalXZ(x, z));
+      } catch (err) {
+        // NoPath / Timeout are expected on complex terrain — just pick a new spot
+        if (!['NoPath', 'Timeout', 'GoalChanged', 'PathStopped'].includes(err.name)) {
+          console.warn(`[${bot.username}] Wander error: ${err.message}`);
+        }
+      }
+      await sleep(1000 + Math.random() * 4000);
+    }
+  }
+
+  // Ambient chat on a separate timer
+  setInterval(() => {
+    if (bot.entity) {
+      bot.chat(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+    }
+  }, 3 * 60_000);
+
+  wanderLoop().catch(err => console.error(`[${bot.username}] Wander loop died:`, err.message));
+}
+
+// ── Follow behavior ───────────────────────────────────────────────────────────
+// GoalFollow with dynamic=true: pathfinder tracks the moving entity each tick.
+// goal_reached is NOT emitted for dynamic goals — that's correct behavior.
+function startFollow(bot) {
+  setInterval(() => {
+    if (!bot.entity) return;
+
+    let nearest = null;
+    let nearestDist = Infinity;
+
+    for (const p of Object.values(bot.players)) {
+      if (!p.entity || p.username === bot.username) continue;
+      const d = bot.entity.position.distanceTo(p.entity.position);
+      if (d < nearestDist) { nearestDist = d; nearest = p; }
+    }
+
+    if (!nearest) {
+      bot.pathfinder.stop();
+      return;
+    }
+
+    // Only update goal if outside follow range to avoid constant path resets
+    if (nearestDist > 4) {
+      bot.pathfinder.setGoal(new GoalFollow(nearest.entity, 3), true);
+    } else {
+      bot.pathfinder.stop();
+    }
+  }, 1000);
+}
+
+// ── Farm behavior ─────────────────────────────────────────────────────────────
+// Uses getProperties().age for crop maturity (block.metadata removed in 1.13+).
+// GoalGetToBlock positions the bot adjacent to (not inside) the crop.
+function startFarm(bot) {
+  // Max age for each crop type
+  const CROP_MAX_AGE = { wheat: 7, carrots: 7, potatoes: 7, beetroots: 3 };
+
+  async function farmLoop() {
+    while (true) {
+      if (!bot.entity) { await sleep(2000); continue; }
+
+      const mcData = require('minecraft-data')(bot.version);
+      const cropIds = Object.keys(CROP_MAX_AGE)
+        .map(c => mcData.blocksByName[c]?.id)
+        .filter(Boolean);
+
+      const cropPos = bot.findBlock({
+        matching: cropIds,
+        maxDistance: 32,
+        useExtraInfo: (block) => {
+          const maxAge = CROP_MAX_AGE[block.name] ?? 7;
+          const props  = block.getProperties();
+          return parseInt(props?.age ?? '0', 10) >= maxAge;
+        },
+      });
+
+      if (!cropPos) { await sleep(5000); continue; }
+
+      try {
+        await bot.pathfinder.goto(
+          new GoalGetToBlock(cropPos.position.x, cropPos.position.y, cropPos.position.z)
+        );
+
+        // Re-fetch block — someone else may have harvested it while we walked over
+        const block = bot.blockAt(cropPos.position);
+        if (block && block.name !== 'air' && block.diggable) {
+          const props  = block.getProperties();
+          const maxAge = CROP_MAX_AGE[block.name] ?? 7;
+          if (parseInt(props?.age ?? '0', 10) >= maxAge) {
+            await bot.dig(block, true); // forceLook=true snaps head instantly
+          }
+        }
+      } catch (err) {
+        console.warn(`[${bot.username}] Farm error: ${err.message}`);
+      }
+
+      await sleep(500);
+    }
+  }
+
+  farmLoop().catch(err => console.error(`[${bot.username}] Farm loop died:`, err.message));
+}
+
+// ── Combat behavior ───────────────────────────────────────────────────────────
+// Driven by physicsTick (every game tick ~50ms) for responsive detection.
+// Uses bot.nearestEntity() for efficient hostile lookup.
+// Equips best weapon, looks at mob before attacking for server-side hit registration.
+function startCombat(bot) {
+  const HOSTILE = new Set([
+    'zombie', 'skeleton', 'spider', 'cave_spider', 'creeper', 'enderman',
+    'witch', 'pillager', 'vindicator', 'evoker', 'phantom', 'drowned',
+    'husk', 'stray', 'slime', 'magma_cube', 'blaze', 'ghast',
+    'wither_skeleton', 'zombified_piglin', 'hoglin', 'piglin_brute', 'ravager',
+  ]);
+
+  let combatActive = false;
+
+  bot.on('physicsTick', () => {
+    if (combatActive || !bot.entity) return;
+
+    const mob = bot.nearestEntity(e =>
+      e.type === 'mob' &&
+      !!e.name &&
+      HOSTILE.has(e.name.toLowerCase()) &&
+      bot.entity.position.distanceTo(e.position) <= 20
+    );
+
+    if (!mob) return;
+
+    combatActive = true;
+    fightMob(bot, mob, HOSTILE)
+      .catch(err => console.warn(`[${bot.username}] Combat error: ${err.message}`))
+      .finally(() => { combatActive = false; });
+  });
+}
+
+async function fightMob(bot, mob, HOSTILE) {
+  // Equip best melee weapon
+  const weapon = bot.inventory.items().find(i =>
+    i.name.includes('sword') || i.name.includes('axe')
+  );
+  if (weapon) await bot.equip(weapon, 'hand');
+
+  // Navigate to melee range
+  try {
+    await bot.pathfinder.goto(
+      new GoalNear(mob.position.x, mob.position.y, mob.position.z, 2)
+    );
+  } catch (err) {
+    return; // can't reach — give up and let next tick try again
+  }
+
+  // Attack loop until mob dies or leaves range
+  while (true) {
+    const liveMob = bot.entities[mob.id];
+    if (!liveMob || !HOSTILE.has(liveMob.name?.toLowerCase())) break;
+
+    const dist = bot.entity.position.distanceTo(liveMob.position);
+    if (dist > 20) break; // mob ran away
+
+    if (dist > 3) {
+      // Re-close the gap
+      try {
+        await bot.pathfinder.goto(
+          new GoalNear(liveMob.position.x, liveMob.position.y, liveMob.position.z, 2)
+        );
+      } catch { break; }
+    }
+
+    // Look at mob center before swinging — ensures server-side hit registration
+    await bot.lookAt(liveMob.position.offset(0, liveMob.height * 0.5, 0));
+    bot.attack(liveMob);
+
+    // Wait for attack cooldown (sword = 625ms, use 650ms for safety)
+    await sleep(650);
+  }
+}
+
+// ── Command helpers ───────────────────────────────────────────────────────────
+async function cmdFollow(bot, targetName) {
+  const player = bot.players[targetName];
+  if (!player?.entity) {
+    bot.chat(`Can't find player "${targetName}".`);
+    return;
+  }
+  bot.pathfinder.setGoal(new GoalFollow(player.entity, 3), true);
+  bot.chat(`Following ${targetName}!`);
+}
+
+function cmdAttack(bot, targetName) {
+  const entity = Object.values(bot.entities).find(
+    e => e.username === targetName || e.name === targetName
+  );
+  if (!entity) {
+    bot.chat(`Can't find "${targetName}".`);
+    return;
+  }
+  bot.attack(entity);
+  bot.chat(`Attacking ${targetName}!`);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+// ── Start ─────────────────────────────────────────────────────────────────────
+createBot();
+
 
 // ── Configuration ────────────────────────────────────────────────────────────
 const HOST       = process.env.MC_HOST     || 'minecraft.minecraft.svc.cluster.local';
