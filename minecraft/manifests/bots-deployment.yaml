@@ -39,6 +39,8 @@ spec:
               value: Wanderer
             - name: BOT_ROLE
               value: wander
+            - name: MC_VERSION
+              value: "1.21.4"
           resources:
             requests:
               cpu: 50m
@@ -81,6 +83,8 @@ spec:
               value: Companion
             - name: BOT_ROLE
               value: follow
+            - name: MC_VERSION
+              value: "1.21.4"
           resources:
             requests:
               cpu: 50m
@@ -123,6 +127,8 @@ spec:
               value: Farmer
             - name: BOT_ROLE
               value: farm
+            - name: MC_VERSION
+              value: "1.21.4"
           resources:
             requests:
               cpu: 50m
@@ -165,6 +171,8 @@ spec:
               value: Guard
             - name: BOT_ROLE
               value: combat
+            - name: MC_VERSION
+              value: "1.21.4"
           resources:
             requests:
               cpu: 50m

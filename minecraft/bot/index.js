@@ -9,6 +9,7 @@ const HOST        = process.env.MC_HOST     || 'minecraft-headless.minecraft.svc
 const PORT        = parseInt(process.env.MC_PORT || '25565', 10);
 const USERNAME    = process.env.BOT_USERNAME || 'Bot';
 const ROLE        = (process.env.BOT_ROLE   || 'wander').toLowerCase();
+const MC_VERSION  = process.env.MC_VERSION  || '1.21.4';
 const RECONNECT_DELAY_MS = 10_000;
 
 console.log(`[${USERNAME}] Starting with role="${ROLE}" → ${HOST}:${PORT}`);
@@ -19,7 +20,7 @@ function createBot() {
     host: HOST,
     port: PORT,
     username: USERNAME,
-    version: false,      // auto-detect server version
+    version: MC_VERSION,
     auth: 'offline',
   });
 

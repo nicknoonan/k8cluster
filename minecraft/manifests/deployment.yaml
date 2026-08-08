@@ -57,6 +57,8 @@ spec:
               value: "TRUE"
             - name: TYPE
               value: VANILLA
+            - name: VERSION
+              value: "1.21.4"
           readinessProbe:
             tcpSocket:
               port: minecraft
