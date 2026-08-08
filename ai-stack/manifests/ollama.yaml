@@ -35,7 +35,7 @@ spec:
             wait
         env:
         - name: OLLAMA_NUM_CTX
-          value: "16384"
+          value: "32000"
         - name: OLLAMA_SCHED_SPREAD
           value: "1"
         ports:
