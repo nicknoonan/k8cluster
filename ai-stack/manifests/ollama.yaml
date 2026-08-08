@@ -30,6 +30,9 @@ spec:
             ollama pull llama3.2:3b
             ollama pull qwen2.5:7b
             wait
+        env:
+        - name: OLLAMA_NUM_CTX
+          value: "8192"
         ports:
         - containerPort: 11434
         resources:
