@@ -18,6 +18,19 @@ spec:
       - key: bigboi
         operator: Exists
         effect: NoSchedule
+      initContainers:
+      - name: pull-model
+        image: ollama/ollama:latest
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            ollama serve &
+            sleep 5
+            ollama pull llama3.2:3b
+            kill %1
+        volumeMounts:
+        - name: ollama-storage
+          mountPath: /root/.ollama
       containers:
       - name: ollama
         image: ollama/ollama:latest
