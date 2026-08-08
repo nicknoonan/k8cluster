@@ -14,6 +14,10 @@ spec:
       labels:
         app: ollama
     spec:
+      tolerations:
+      - key: bigboi
+        operator: Exists
+        effect: NoSchedule
       containers:
       - name: ollama
         image: ollama/ollama:latest
