@@ -38,6 +38,13 @@ spec:
       containers:
         - name: minecraft
           image: itzg/minecraft-server:latest
+          resources:
+            requests:
+              cpu: "4"
+              memory: 8Gi
+            limits:
+              cpu: "8"
+              memory: 8Gi
           ports:
             - name: minecraft
               containerPort: 25565
