@@ -11,6 +11,31 @@ spec:
   dnsNames:
     - argocd.nicknoonan.net
 ---
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: argocd-server-transport
+  namespace: argocd
+spec:
+  serverName: argocd-server.argocd.svc.cluster.local
+  insecureSkipVerify: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: argocd-server-traefik
+  namespace: argocd
+  annotations:
+    traefik.ingress.kubernetes.io/service.serverstransport: argocd-argocd-server-transport@kubernetescrd
+spec:
+  selector:
+    app.kubernetes.io/name: argocd-server
+  ports:
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 8080
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -19,7 +44,6 @@ metadata:
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/service.serversscheme: https
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   tls:
@@ -34,6 +58,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: argocd-server
+                name: argocd-server-traefik
                 port:
                   number: 443
