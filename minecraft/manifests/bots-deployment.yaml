@@ -32,7 +32,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: MC_HOST
-              value: minecraft-headless.minecraft.svc.cluster.local
+              value: minecraft.minecraft.svc.cluster.local
             - name: MC_PORT
               value: "25565"
             - name: BOT_USERNAME
@@ -76,7 +76,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: MC_HOST
-              value: minecraft-headless.minecraft.svc.cluster.local
+              value: minecraft.minecraft.svc.cluster.local
             - name: MC_PORT
               value: "25565"
             - name: BOT_USERNAME
@@ -120,7 +120,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: MC_HOST
-              value: minecraft-headless.minecraft.svc.cluster.local
+              value: minecraft.minecraft.svc.cluster.local
             - name: MC_PORT
               value: "25565"
             - name: BOT_USERNAME
@@ -164,7 +164,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: MC_HOST
-              value: minecraft-headless.minecraft.svc.cluster.local
+              value: minecraft.minecraft.svc.cluster.local
             - name: MC_PORT
               value: "25565"
             - name: BOT_USERNAME

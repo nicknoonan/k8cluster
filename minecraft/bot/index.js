@@ -5,7 +5,7 @@ const { pathfinder, Movements, goals } = require('mineflayer-pathfinder');
 const { GoalNear, GoalFollow, GoalBlock } = goals;
 
 // ── Configuration ────────────────────────────────────────────────────────────
-const HOST        = process.env.MC_HOST     || 'minecraft-headless.minecraft.svc.cluster.local';
+const HOST        = process.env.MC_HOST     || 'minecraft.minecraft.svc.cluster.local';
 const PORT        = parseInt(process.env.MC_PORT || '25565', 10);
 const USERNAME    = process.env.BOT_USERNAME || 'Bot';
 const ROLE        = (process.env.BOT_ROLE   || 'wander').toLowerCase();
