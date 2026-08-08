@@ -34,7 +34,7 @@ spec:
             ollama pull gemma4:12b
             wait
         env:
-        - name: OLLAMA_NUM_CTX
+        - name: OLLAMA_CONTEXT_LENGTH
           value: "32000"
         - name: OLLAMA_SCHED_SPREAD
           value: "1"
