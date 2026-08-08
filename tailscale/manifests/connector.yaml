@@ -1,0 +1,12 @@
+apiVersion: tailscale.com/v1alpha1
+kind: Connector
+metadata:
+  name: traefik-subnet-router
+  namespace: tailscale
+spec:
+  hostname: k8s-traefik
+  subnetRouter:
+    advertiseRoutes:
+      - "192.168.1.111/32"
+  tags:
+    - tag:k8s
