@@ -21,15 +21,15 @@ spec:
       - key: bigboi
         operator: Exists
         effect: NoSchedule
+      nodeSelector:
+        kubernetes.io/hostname: bigboi
       containers:
       - image: nvcr.io/nvidia/k8s-device-plugin:v0.17.1
         name: nvidia-device-plugin-ctr
         args:
           - "--device-discovery-strategy=nvml"
         securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop: ["ALL"]
+          privileged: true
         volumeMounts:
         - name: device-plugin
           mountPath: /var/lib/kubelet/device-plugins
@@ -37,6 +37,8 @@ spec:
           mountPath: /driver-root
         - name: nvidia-dev
           mountPath: /dev
+        - name: proc
+          mountPath: /proc
       volumes:
       - name: device-plugin
         hostPath:
@@ -47,5 +49,8 @@ spec:
       - name: nvidia-dev
         hostPath:
           path: /dev
+      - name: proc
+        hostPath:
+          path: /proc
   updateStrategy:
     type: RollingUpdate
