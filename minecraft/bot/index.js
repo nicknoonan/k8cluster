@@ -230,7 +230,8 @@ function startFollow(bot) {
   // ── Torch: place torch if standing in dark spot ─────────────────────────
   setInterval(async () => {
     if (defending || !bot.entity) return;
-    const light = bot.world.getLight(bot.entity.position.floored());
+    const blockAtFeet = bot.blockAt(bot.entity.position.floored());
+    const light = blockAtFeet?.light ?? 15;
     if (light > 7) return; // bright enough
 
     const torch = bot.inventory.items().find(i =>
