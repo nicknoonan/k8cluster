@@ -43,10 +43,6 @@ spec:
         volumeMounts:
         - name: ollama-storage
           mountPath: /root/.ollama
-        tolerations:
-        - key: "bigboi"
-          operator: "Exists"
-          effect: "NoSchedule"
   volumeClaimTemplates:
   - metadata:
       name: ollama-storage
