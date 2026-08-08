@@ -35,7 +35,7 @@ spec:
             wait
         env:
         - name: OLLAMA_NUM_CTX
-          value: "8192"
+          value: "16384"
         ports:
         - containerPort: 11434
         resources:
