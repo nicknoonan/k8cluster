@@ -16,15 +16,12 @@ console.log(`[${USERNAME}] Starting with role="${ROLE}" → ${HOST}:${PORT}`);
 // ── Bot lifecycle ─────────────────────────────────────────────────────────────
 function createBot() {
   const bot = mineflayer.createBot({
-    host: USERNAME,      // resolved at spawn
+    host: HOST,
     port: PORT,
     username: USERNAME,
     version: false,      // auto-detect server version
     auth: 'offline',
   });
-
-  // fix: host must be the actual server host
-  bot.options.host = HOST;
 
   bot.loadPlugin(pathfinder);
 
