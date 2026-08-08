@@ -35,6 +35,8 @@ spec:
         env:
         - name: OLLAMA_NUM_CTX
           value: "16384"
+        - name: OLLAMA_SCHED_SPREAD
+          value: "1"
         ports:
         - containerPort: 11434
         resources:
