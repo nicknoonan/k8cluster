@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-webui
+  namespace: ai-local
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-webui
+  template:
+    metadata:
+      labels:
+        app: open-webui
+    spec:
+      containers:
+      - name: open-webui
+        image: ghcr.io/open-webui/open-webui:main
+        ports:
+        - containerPort: 8080
+        env:
+        - name: OLLAMA_BASE_URL
+          value: "http://ollama-svc.ai-local.svc.cluster.local:11434"
+        volumeMounts:
+        - name: webui-storage
+          mountPath: /app/backend/data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: open-webui-svc
+  namespace: ai-local
+spec:
+  type: NodePort
+  ports:
+  - port: 3000
+    targetPort: 8080
+    nodePort: 30080
+  selector:
+    app: open-webui

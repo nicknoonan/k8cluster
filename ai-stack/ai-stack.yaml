@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: local-ai-stack
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/YOUR-USERNAME/YOUR-GIT-REPO.git'
+    targetRevision: HEAD
+    path: ai-stack/manifests
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: ai-local  # Default target namespace for namespace-scoped resources
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
