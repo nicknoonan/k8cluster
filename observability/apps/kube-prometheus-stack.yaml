@@ -27,10 +27,6 @@ spec:
             enabled: true
             size: 2Gi
           additionalDataSources:
-            - name: Prometheus
-              type: prometheus
-              url: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
-              access: proxy
             - name: Loki
               type: loki
               url: http://loki.monitoring.svc.cluster.local:3100
