@@ -29,6 +29,9 @@ spec:
             ollama pull llama3.1:8b
             ollama pull llama3.2:3b
             ollama pull qwen2.5:7b
+            ollama pull qwen2.5-coder:7b
+            ollama pull qwen2.5-coder:14b
+            ollama pull deepseek-coder-v2:16b
             wait
         env:
         - name: OLLAMA_NUM_CTX
