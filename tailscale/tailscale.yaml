@@ -1,17 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: root
+  name: tailscale
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: 'https://github.com/nicknoonan/k8cluster.git'
     targetRevision: HEAD
-    path: .
-    directory:
-      recurse: true
-      include: '{observability/observability.yaml,node-power-manager/node-power-manager.yaml,certs/certs.yaml,ai-stack/ai-stack.yaml,minecraft/minecraft.yaml,argocd/ingress.yaml,tailscale/tailscale.yaml}'
+    path: tailscale/apps
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: argocd

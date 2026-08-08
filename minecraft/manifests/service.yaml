@@ -20,6 +20,7 @@ metadata:
   namespace: minecraft
 spec:
   type: LoadBalancer
+  loadBalancerClass: tailscale
   selector:
     app.kubernetes.io/name: minecraft
   ports:
