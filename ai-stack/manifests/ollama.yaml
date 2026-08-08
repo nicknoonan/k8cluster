@@ -61,3 +61,42 @@ spec:
     targetPort: 11434
   selector:
     app: ollama
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ollama-tls
+  namespace: ai-local
+spec:
+  secretName: ollama-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - ollama.nicknoonan.net
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ollama
+  namespace: ai-local
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+    - hosts:
+        - ollama.nicknoonan.net
+      secretName: ollama-tls
+  rules:
+    - host: ollama.nicknoonan.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ollama-svc
+                port:
+                  number: 11434
