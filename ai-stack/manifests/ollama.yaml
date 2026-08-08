@@ -26,7 +26,9 @@ spec:
           - |
             ollama serve &
             sleep 5
+            ollama pull llama3.1:8b
             ollama pull llama3.2:3b
+            ollama pull qwen2.5:7b
             wait
         ports:
         - containerPort: 11434
