@@ -8,7 +8,7 @@ metadata:
 # Add or remove entries here and ArgoCD will reconcile the bots Deployment.
 data:
   bots.env: |
-    # Wanderer=wander
-    # Companion=follow
-    # Farmer=farm
-    # Guard=combat
+    Wanderer=wander
+    Companion=follow
+    Farmer=farm
+    Guard=combat
