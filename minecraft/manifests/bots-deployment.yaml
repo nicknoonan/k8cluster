@@ -1,9 +1,6 @@
-# Each bot runs as its own Deployment so it can be scaled and restarted independently.
-# To add a bot: copy one block, change the name/username/role, and commit.
-# To remove a bot: delete its block. ArgoCD will prune the Deployment automatically.
+# Each bot runs as its own Deployment backed by mindcraft + Ollama (qwen2.5:7b).
+# settings.js and the bot's profile JSON are mounted from the minecraft-bots ConfigMap.
 # Image is built and pushed by .github/workflows/minecraft-bot.yml.
-#
-# Bot image tag: update BOT_IMAGE_TAG in this file or pin it per-bot.
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -30,24 +27,24 @@ spec:
         - name: bot
           image: ghcr.io/nicknoonan/minecraft-bot:latest
           imagePullPolicy: Always
-          env:
-            - name: MC_HOST
-              value: minecraft.minecraft.svc.cluster.local
-            - name: MC_PORT
-              value: "25565"
-            - name: BOT_USERNAME
-              value: Wanderer
-            - name: BOT_ROLE
-              value: wander
-            - name: MC_VERSION
-              value: "1.21.11"
           resources:
             requests:
-              cpu: 50m
-              memory: 128Mi
-            limits:
-              cpu: 200m
+              cpu: 100m
               memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /app/settings.js
+              subPath: settings.js
+            - name: config
+              mountPath: /app/profile.json
+              subPath: wanderer.json
+      volumes:
+        - name: config
+          configMap:
+            name: minecraft-bots
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -74,24 +71,24 @@ spec:
         - name: bot
           image: ghcr.io/nicknoonan/minecraft-bot:latest
           imagePullPolicy: Always
-          env:
-            - name: MC_HOST
-              value: minecraft.minecraft.svc.cluster.local
-            - name: MC_PORT
-              value: "25565"
-            - name: BOT_USERNAME
-              value: Companion
-            - name: BOT_ROLE
-              value: follow
-            - name: MC_VERSION
-              value: "1.21.11"
           resources:
             requests:
-              cpu: 50m
-              memory: 128Mi
-            limits:
-              cpu: 200m
+              cpu: 100m
               memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /app/settings.js
+              subPath: settings.js
+            - name: config
+              mountPath: /app/profile.json
+              subPath: companion.json
+      volumes:
+        - name: config
+          configMap:
+            name: minecraft-bots
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -118,24 +115,24 @@ spec:
         - name: bot
           image: ghcr.io/nicknoonan/minecraft-bot:latest
           imagePullPolicy: Always
-          env:
-            - name: MC_HOST
-              value: minecraft.minecraft.svc.cluster.local
-            - name: MC_PORT
-              value: "25565"
-            - name: BOT_USERNAME
-              value: Farmer
-            - name: BOT_ROLE
-              value: farm
-            - name: MC_VERSION
-              value: "1.21.11"
           resources:
             requests:
-              cpu: 50m
-              memory: 128Mi
-            limits:
-              cpu: 200m
+              cpu: 100m
               memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /app/settings.js
+              subPath: settings.js
+            - name: config
+              mountPath: /app/profile.json
+              subPath: farmer.json
+      volumes:
+        - name: config
+          configMap:
+            name: minecraft-bots
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -162,21 +159,21 @@ spec:
         - name: bot
           image: ghcr.io/nicknoonan/minecraft-bot:latest
           imagePullPolicy: Always
-          env:
-            - name: MC_HOST
-              value: minecraft.minecraft.svc.cluster.local
-            - name: MC_PORT
-              value: "25565"
-            - name: BOT_USERNAME
-              value: Guard
-            - name: BOT_ROLE
-              value: combat
-            - name: MC_VERSION
-              value: "1.21.11"
           resources:
             requests:
-              cpu: 50m
-              memory: 128Mi
-            limits:
-              cpu: 200m
+              cpu: 100m
               memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /app/settings.js
+              subPath: settings.js
+            - name: config
+              mountPath: /app/profile.json
+              subPath: guard.json
+      volumes:
+        - name: config
+          configMap:
+            name: minecraft-bots

@@ -5,10 +5,10 @@ metadata:
   namespace: minecraft
 data:
   server.properties: |
-    motd=Kubernetes Minecraft Server
+    motd=shrimpcraft
     difficulty=normal
     gamemode=survival
-    max-players=20
+    max-players=10
     enable-command-block=true
     online-mode=false
     view-distance=10
