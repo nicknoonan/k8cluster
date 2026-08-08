@@ -10,7 +10,9 @@ const PORT        = parseInt(process.env.MC_PORT || '25565', 10);
 const USERNAME    = process.env.BOT_USERNAME || 'Bot';
 const ROLE        = (process.env.BOT_ROLE   || 'wander').toLowerCase();
 const MC_VERSION  = process.env.MC_VERSION  || '1.21.4';
-const RECONNECT_DELAY_MS = 10_000;
+const RECONNECT_BASE_MS  = 10_000;
+const RECONNECT_MAX_MS   = 120_000;
+let   reconnectDelay     = RECONNECT_BASE_MS;
 
 console.log(`[${USERNAME}] Starting with role="${ROLE}" → ${HOST}:${PORT}`);
 
@@ -27,6 +29,7 @@ function createBot() {
   bot.loadPlugin(pathfinder);
 
   bot.once('spawn', () => {
+    reconnectDelay = RECONNECT_BASE_MS; // reset backoff on successful connect
     console.log(`[${USERNAME}] Spawned. Role: ${ROLE}`);
     const mcData    = require('minecraft-data')(bot.version);
     const movements = new Movements(bot, mcData);
@@ -50,8 +53,9 @@ function createBot() {
 
   bot.on('error',      (err) => console.error(`[${USERNAME}] Error:`, err.message));
   bot.on('end',        (reason) => {
-    console.log(`[${USERNAME}] Disconnected (${reason}). Reconnecting in ${RECONNECT_DELAY_MS / 1000}s…`);
-    setTimeout(createBot, RECONNECT_DELAY_MS);
+    console.log(`[${USERNAME}] Disconnected (${reason}). Reconnecting in ${reconnectDelay / 1000}s…`);
+    setTimeout(createBot, reconnectDelay);
+    reconnectDelay = Math.min(reconnectDelay * 2, RECONNECT_MAX_MS);
   });
 }
 
