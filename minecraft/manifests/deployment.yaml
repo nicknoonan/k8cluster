@@ -24,6 +24,21 @@ spec:
         - operator: Exists
           effect: NoSchedule
       initContainers:
+        - name: reset-world
+          image: busybox:1.36
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          command:
+            - sh
+            - -c
+            - |
+              echo "Removing world data for fresh start..."
+              rm -rf /data/world /data/world_nether /data/world_the_end /data/level.dat /data/level.dat_old
+              echo "World reset complete."
+          volumeMounts:
+            - name: data
+              mountPath: /data
         - name: stage-server-properties
           image: busybox:1.36
           securityContext:
@@ -58,7 +73,7 @@ spec:
             - name: TYPE
               value: VANILLA
             - name: VERSION
-              value: "1.21.4"
+              value: "26.2"
           readinessProbe:
             tcpSocket:
               port: minecraft
