@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minecraft-config
+  namespace: minecraft
+data:
+  server.properties: |
+    motd=Kubernetes Minecraft Server
+    difficulty=normal
+    gamemode=survival
+    max-players=10
+    enable-command-block=true
+    online-mode=true
+    view-distance=10
+    simulation-distance=10
