@@ -30,12 +30,6 @@ spec:
             - name: Loki
               type: loki
               url: http://loki.monitoring.svc.cluster.local:3100
-            - name: Tempo
-              type: tempo
-              url: http://tempo.monitoring.svc.cluster.local:3100
-            - name: Pyroscope
-              type: grafana-pyroscope-datasource
-              url: http://pyroscope.monitoring.svc.cluster.local:4040
           ingress:
             enabled: true
             ingressClassName: traefik
