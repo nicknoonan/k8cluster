@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Clone mindcraft at a pinned commit for reproducibility, then install deps
 # --no-optional skips the gl package (vision feature) which needs a display
-ARG MINDCRAFT_REF=main
+ARG MINDCRAFT_REF=stable
 RUN git clone --depth 1 --branch ${MINDCRAFT_REF} \
       https://github.com/mindcraft-bots/mindcraft.git . && \
     npm install --no-optional
