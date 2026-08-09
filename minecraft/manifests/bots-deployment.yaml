@@ -1,191 +1,191 @@
-# Each bot runs as its own Deployment backed by mindcraft + Ollama (qwen2.5:7b).
-# settings.js and the bot's profile JSON are mounted from the minecraft-bots ConfigMap.
-# Image is built and pushed by .github/workflows/minecraft-bot.yml.
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: minecraft-bot-wanderer
-  namespace: minecraft
-  labels:
-    app.kubernetes.io/name: minecraft-bot
-    minecraft-bot/role: wander
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/instance: minecraft-bot-wanderer
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: minecraft-bot
-        app.kubernetes.io/instance: minecraft-bot-wanderer
-        minecraft-bot/role: wander
-    spec:
-      enableServiceLinks: false
-      restartPolicy: Always
-      containers:
-        - name: bot
-          image: ghcr.io/nicknoonan/minecraft-bot:latest
-          imagePullPolicy: Always
-          command: ["node", "main.js"]
-          args: ["--profiles", "/app/profile.json"]
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
-          volumeMounts:
-            - name: config
-              mountPath: /app/settings.js
-              subPath: settings.js
-            - name: config
-              mountPath: /app/profile.json
-              subPath: wanderer.json
-      volumes:
-        - name: config
-          configMap:
-            name: minecraft-bots
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: minecraft-bot-companion
-  namespace: minecraft
-  labels:
-    app.kubernetes.io/name: minecraft-bot
-    minecraft-bot/role: follow
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/instance: minecraft-bot-companion
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: minecraft-bot
-        app.kubernetes.io/instance: minecraft-bot-companion
-        minecraft-bot/role: follow
-    spec:
-      enableServiceLinks: false
-      restartPolicy: Always
-      containers:
-        - name: bot
-          image: ghcr.io/nicknoonan/minecraft-bot:latest
-          imagePullPolicy: Always
-          command: ["node", "main.js"]
-          args: ["--profiles", "/app/profile.json"]
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
-          volumeMounts:
-            - name: config
-              mountPath: /app/settings.js
-              subPath: settings.js
-            - name: config
-              mountPath: /app/profile.json
-              subPath: companion.json
-      volumes:
-        - name: config
-          configMap:
-            name: minecraft-bots
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: minecraft-bot-farmer
-  namespace: minecraft
-  labels:
-    app.kubernetes.io/name: minecraft-bot
-    minecraft-bot/role: farm
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/instance: minecraft-bot-farmer
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: minecraft-bot
-        app.kubernetes.io/instance: minecraft-bot-farmer
-        minecraft-bot/role: farm
-    spec:
-      enableServiceLinks: false
-      restartPolicy: Always
-      containers:
-        - name: bot
-          image: ghcr.io/nicknoonan/minecraft-bot:latest
-          imagePullPolicy: Always
-          command: ["node", "main.js"]
-          args: ["--profiles", "/app/profile.json"]
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
-          volumeMounts:
-            - name: config
-              mountPath: /app/settings.js
-              subPath: settings.js
-            - name: config
-              mountPath: /app/profile.json
-              subPath: farmer.json
-      volumes:
-        - name: config
-          configMap:
-            name: minecraft-bots
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: minecraft-bot-guard
-  namespace: minecraft
-  labels:
-    app.kubernetes.io/name: minecraft-bot
-    minecraft-bot/role: combat
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/instance: minecraft-bot-guard
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: minecraft-bot
-        app.kubernetes.io/instance: minecraft-bot-guard
-        minecraft-bot/role: combat
-    spec:
-      enableServiceLinks: false
-      restartPolicy: Always
-      containers:
-        - name: bot
-          image: ghcr.io/nicknoonan/minecraft-bot:latest
-          imagePullPolicy: Always
-          command: ["node", "main.js"]
-          args: ["--profiles", "/app/profile.json"]
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
-          volumeMounts:
-            - name: config
-              mountPath: /app/settings.js
-              subPath: settings.js
-            - name: config
-              mountPath: /app/profile.json
-              subPath: guard.json
-      volumes:
-        - name: config
-          configMap:
-            name: minecraft-bots
+# # Each bot runs as its own Deployment backed by mindcraft + Ollama (qwen2.5:7b).
+# # settings.js and the bot's profile JSON are mounted from the minecraft-bots ConfigMap.
+# # Image is built and pushed by .github/workflows/minecraft-bot.yml.
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: minecraft-bot-wanderer
+#   namespace: minecraft
+#   labels:
+#     app.kubernetes.io/name: minecraft-bot
+#     minecraft-bot/role: wander
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app.kubernetes.io/instance: minecraft-bot-wanderer
+#   template:
+#     metadata:
+#       labels:
+#         app.kubernetes.io/name: minecraft-bot
+#         app.kubernetes.io/instance: minecraft-bot-wanderer
+#         minecraft-bot/role: wander
+#     spec:
+#       enableServiceLinks: false
+#       restartPolicy: Always
+#       containers:
+#         - name: bot
+#           image: ghcr.io/nicknoonan/minecraft-bot:latest
+#           imagePullPolicy: Always
+#           command: ["node", "main.js"]
+#           args: ["--profiles", "/app/profile.json"]
+#           resources:
+#             requests:
+#               cpu: 100m
+#               memory: 256Mi
+#             limits:
+#               cpu: 500m
+#               memory: 512Mi
+#           volumeMounts:
+#             - name: config
+#               mountPath: /app/settings.js
+#               subPath: settings.js
+#             - name: config
+#               mountPath: /app/profile.json
+#               subPath: wanderer.json
+#       volumes:
+#         - name: config
+#           configMap:
+#             name: minecraft-bots
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: minecraft-bot-companion
+#   namespace: minecraft
+#   labels:
+#     app.kubernetes.io/name: minecraft-bot
+#     minecraft-bot/role: follow
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app.kubernetes.io/instance: minecraft-bot-companion
+#   template:
+#     metadata:
+#       labels:
+#         app.kubernetes.io/name: minecraft-bot
+#         app.kubernetes.io/instance: minecraft-bot-companion
+#         minecraft-bot/role: follow
+#     spec:
+#       enableServiceLinks: false
+#       restartPolicy: Always
+#       containers:
+#         - name: bot
+#           image: ghcr.io/nicknoonan/minecraft-bot:latest
+#           imagePullPolicy: Always
+#           command: ["node", "main.js"]
+#           args: ["--profiles", "/app/profile.json"]
+#           resources:
+#             requests:
+#               cpu: 100m
+#               memory: 256Mi
+#             limits:
+#               cpu: 500m
+#               memory: 512Mi
+#           volumeMounts:
+#             - name: config
+#               mountPath: /app/settings.js
+#               subPath: settings.js
+#             - name: config
+#               mountPath: /app/profile.json
+#               subPath: companion.json
+#       volumes:
+#         - name: config
+#           configMap:
+#             name: minecraft-bots
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: minecraft-bot-farmer
+#   namespace: minecraft
+#   labels:
+#     app.kubernetes.io/name: minecraft-bot
+#     minecraft-bot/role: farm
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app.kubernetes.io/instance: minecraft-bot-farmer
+#   template:
+#     metadata:
+#       labels:
+#         app.kubernetes.io/name: minecraft-bot
+#         app.kubernetes.io/instance: minecraft-bot-farmer
+#         minecraft-bot/role: farm
+#     spec:
+#       enableServiceLinks: false
+#       restartPolicy: Always
+#       containers:
+#         - name: bot
+#           image: ghcr.io/nicknoonan/minecraft-bot:latest
+#           imagePullPolicy: Always
+#           command: ["node", "main.js"]
+#           args: ["--profiles", "/app/profile.json"]
+#           resources:
+#             requests:
+#               cpu: 100m
+#               memory: 256Mi
+#             limits:
+#               cpu: 500m
+#               memory: 512Mi
+#           volumeMounts:
+#             - name: config
+#               mountPath: /app/settings.js
+#               subPath: settings.js
+#             - name: config
+#               mountPath: /app/profile.json
+#               subPath: farmer.json
+#       volumes:
+#         - name: config
+#           configMap:
+#             name: minecraft-bots
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: minecraft-bot-guard
+#   namespace: minecraft
+#   labels:
+#     app.kubernetes.io/name: minecraft-bot
+#     minecraft-bot/role: combat
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app.kubernetes.io/instance: minecraft-bot-guard
+#   template:
+#     metadata:
+#       labels:
+#         app.kubernetes.io/name: minecraft-bot
+#         app.kubernetes.io/instance: minecraft-bot-guard
+#         minecraft-bot/role: combat
+#     spec:
+#       enableServiceLinks: false
+#       restartPolicy: Always
+#       containers:
+#         - name: bot
+#           image: ghcr.io/nicknoonan/minecraft-bot:latest
+#           imagePullPolicy: Always
+#           command: ["node", "main.js"]
+#           args: ["--profiles", "/app/profile.json"]
+#           resources:
+#             requests:
+#               cpu: 100m
+#               memory: 256Mi
+#             limits:
+#               cpu: 500m
+#               memory: 512Mi
+#           volumeMounts:
+#             - name: config
+#               mountPath: /app/settings.js
+#               subPath: settings.js
+#             - name: config
+#               mountPath: /app/profile.json
+#               subPath: guard.json
+#       volumes:
+#         - name: config
+#           configMap:
+#             name: minecraft-bots
