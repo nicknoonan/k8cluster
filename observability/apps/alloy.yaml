@@ -1,25 +1,112 @@
-# apiVersion: argoproj.io/v1alpha1
-# kind: Application
-# metadata:
-#   name: alloy
-#   namespace: argocd
-# spec:
-#   project: default
-#   source:
-#     repoURL: 'https://grafana.github.io/helm-charts'
-#     chart: alloy
-#     targetRevision: 0.x.x
-#     helm:
-#       values: |
-#         alloy:
-#           configMap:
-#             content: |
-#               // Configure Alloy pipeline to forward logs to Loki, 
-#               // traces to Tempo, metrics to Prometheus, and profiles to Pyroscope.
-#   destination:
-#     server: 'https://kubernetes.default.svc'
-#     namespace: monitoring
-#   syncPolicy:
-#     automated:
-#       prune: true
-#       selfHeal: true
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: alloy
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://grafana.github.io/helm-charts'
+    chart: alloy
+    targetRevision: 1.x.x
+    helm:
+      values: |
+        controller:
+          type: daemonset
+        alloy:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          configMap:
+            content: |-
+              logging {
+                level  = "info"
+                format = "logfmt"
+              }
+
+              discovery.kubernetes "pods" {
+                role = "pod"
+
+                selectors {
+                  role  = "pod"
+                  field = "spec.nodeName=" + coalesce(sys.env("HOSTNAME"), constants.hostname)
+                }
+              }
+
+              discovery.relabel "pod_logs" {
+                targets = discovery.kubernetes.pods.targets
+
+                rule {
+                  source_labels = ["__meta_kubernetes_namespace"]
+                  action        = "replace"
+                  target_label  = "namespace"
+                }
+
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_name"]
+                  action        = "replace"
+                  target_label  = "pod"
+                }
+
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_container_name"]
+                  action        = "replace"
+                  target_label  = "container"
+                }
+
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+                  action        = "replace"
+                  target_label  = "app"
+                }
+
+                rule {
+                  source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
+                  action        = "replace"
+                  target_label  = "job"
+                  separator     = "/"
+                  replacement   = "$1"
+                }
+
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_container_id"]
+                  action        = "replace"
+                  target_label  = "container_runtime"
+                  regex         = `^(\S+):\/\/.+$`
+                  replacement   = "$1"
+                }
+              }
+
+              loki.source.kubernetes "pod_logs" {
+                targets    = discovery.relabel.pod_logs.output
+                forward_to = [loki.process.pod_logs.receiver]
+              }
+
+              loki.process "pod_logs" {
+                stage.static_labels {
+                  values = {
+                    cluster = "k8cluster",
+                  }
+                }
+
+                forward_to = [loki.write.default.receiver]
+              }
+
+              loki.write "default" {
+                endpoint {
+                  url = "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+                }
+              }
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
