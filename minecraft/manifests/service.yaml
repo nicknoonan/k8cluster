@@ -7,7 +7,7 @@ spec:
   clusterIP: None
   selector:
     app.kubernetes.io/name: minecraft
-    app.kubernetes.io/instance: minecraft-legacy
+    app.kubernetes.io/instance: minecraft
   ports:
     - name: minecraft
       port: 25565
@@ -24,7 +24,7 @@ spec:
   loadBalancerClass: tailscale
   selector:
     app.kubernetes.io/name: minecraft
-    app.kubernetes.io/instance: minecraft-legacy
+    app.kubernetes.io/instance: minecraft
   ports:
     - name: minecraft
       port: 25565
@@ -40,7 +40,7 @@ spec:
   clusterIP: None
   selector:
     app.kubernetes.io/name: minecraft
-    app.kubernetes.io/instance: minecraft
+    app.kubernetes.io/instance: minecraft-legacy
   ports:
     - name: minecraft
       port: 25565
@@ -57,7 +57,7 @@ spec:
   loadBalancerClass: tailscale
   selector:
     app.kubernetes.io/name: minecraft
-    app.kubernetes.io/instance: minecraft
+    app.kubernetes.io/instance: minecraft-legacy
   ports:
     - name: minecraft
       port: 25565

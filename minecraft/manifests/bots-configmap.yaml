@@ -9,7 +9,7 @@ data:
   settings.js: |
     const settings = {
       "minecraft_version": "1.21.11",
-      "host": "minecraft.minecraft.svc.cluster.local",
+      "host": "minecraft-legacy.minecraft.svc.cluster.local",
       "port": 25565,
       "auth": "offline",
       "mindserver_port": 8080,
