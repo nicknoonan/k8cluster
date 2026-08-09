@@ -15,7 +15,7 @@ data:
       "mindserver_port": 8080,
       "auto_open_ui": false,
       "base_profile": "survival",
-      "profiles": ["/app/profile.json"],
+      "profiles": ["./profile.json"],
       "load_memory": false,
       "only_chat_with": [],
       "speak": false,
