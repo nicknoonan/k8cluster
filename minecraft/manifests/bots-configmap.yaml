@@ -3,9 +3,8 @@ kind: ConfigMap
 metadata:
   name: minecraft-bots
   namespace: minecraft
-# Bot profiles for mindcraft. Each profile is a JSON file that configures
-# one bot's name, LLM model, and personality system prompt.
-# settings.js is shared across all bots and configures server connection details.
+# Canonical bot configuration source for Kubernetes runtime:
+# settings.js is shared across all bots, and each profile JSON is mounted per bot.
 data:
   settings.js: |
     const settings = {

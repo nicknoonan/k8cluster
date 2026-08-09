@@ -7,7 +7,6 @@ on:
     paths:
       - 'minecraft/bot/Dockerfile'
       - 'minecraft/bot/keys.json'
-      - 'minecraft/bot/profiles/**'
   workflow_dispatch:   # allow manual triggering
 
 env:
