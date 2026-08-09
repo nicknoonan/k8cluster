@@ -31,7 +31,9 @@ WORKDIR /app
 ARG MINDCRAFT_REF=stable
 RUN git clone --depth 1 --branch ${MINDCRAFT_REF} \
       https://github.com/mindcraft-bots/mindcraft.git . && \
-    npm install
+    npm install && \
+    mkdir -p /app/bots && \
+    chown -R node:node /app
 
 # Keys file: Ollama needs no key, but mindcraft expects the file to exist
 COPY keys.json ./keys.json
