@@ -12,15 +12,18 @@ spec:
     helm:
       values: |
         controller:
-          type: daemonset
+          type: deployment
+          replicas: 1
+        configReloader:
+          enabled: false
         alloy:
           resources:
             requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 250m
+              cpu: 200m
               memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
           configMap:
             content: |-
               logging {
@@ -30,11 +33,6 @@ spec:
 
               discovery.kubernetes "pods" {
                 role = "pod"
-
-                selectors {
-                  role  = "pod"
-                  field = "spec.nodeName=" + coalesce(sys.env("HOSTNAME"), constants.hostname)
-                }
               }
 
               discovery.relabel "pod_logs" {
