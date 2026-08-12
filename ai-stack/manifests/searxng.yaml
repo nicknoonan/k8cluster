@@ -57,6 +57,19 @@ spec:
   selector:
     app: searxng
 ---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: searxng-tls
+  namespace: ai-local
+spec:
+  secretName: searxng-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - search.nicknoonan.net
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
