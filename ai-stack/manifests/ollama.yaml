@@ -27,11 +27,19 @@ spec:
             ollama serve &
             sleep 5
             ollama pull llama3.1:8b
+            ollama pull llama3.2:1b
             ollama pull llama3.2:3b
-            ollama pull qwen2.5:7b
-            ollama pull qwen2.5-coder:7b
-            ollama pull qwen3.6:27b
+            ollama pull deepseek-r1:1.5b
+            ollama pull deepseek-r1:7b
+            ollama pull deepseek-r1:8b
+            ollama pull deepseek-r1:14b
+            ollama pull qwen3:1.7b
+            ollama pull qwen3:4b
+            ollama pull qwen3:8b
+            ollama pull qwen3:14b
             ollama pull gemma4:12b
+            ollama pull gemma4:e2b
+            ollama pull gemma4:e4b
             wait
         env:
         - name: OLLAMA_CONTEXT_LENGTH
