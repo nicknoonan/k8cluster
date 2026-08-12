@@ -1,3 +1,6 @@
+internalDatabase:
+  enabled: false
+
 nextcloud:
   host: cloud.nicknoonan.net
   trustedDomains:
@@ -36,7 +39,7 @@ postgresql:
     postgresql:
       auth:
         username: nextcloud
-        password: "<set-postgresql-password>"
+        password: "password"
         database: nextcloud
   primary:
     persistence:
