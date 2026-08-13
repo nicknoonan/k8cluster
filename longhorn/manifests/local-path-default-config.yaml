@@ -1,0 +1,20 @@
+# Disable the "default StorageClass" flag on the k3s-managed local-path
+# provisioner so Longhorn becomes the only default StorageClass in the
+# cluster. k3s ships local-path as a built-in Helm chart; this HelmChartConfig
+# is the supported way to override its values (persists across k3s restarts,
+# unlike a raw kubectl patch on the StorageClass).
+#
+# The longhorn ArgoCD Application targets namespace longhorn-system for its
+# manifests source, so this per-resource annotation redirects the
+# HelmChartConfig into kube-system where k3s expects it.
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: local-path
+  namespace: kube-system
+  annotations:
+    argocd.argoproj.io/manifest-namespace: kube-system
+spec:
+  valuesContent: |
+    storageClass:
+      defaultClass: false

@@ -11,7 +11,7 @@ spec:
     path: .
     directory:
       recurse: true
-      include: '{observability/observability.yaml,node-power-manager/node-power-manager.yaml,certs/certs.yaml,ai-stack/ai-stack.yaml,minecraft/minecraft.yaml,argocd/ingress.yaml,tailscale/tailscale.yaml}'
+      include: '{observability/observability.yaml,node-power-manager/node-power-manager.yaml,certs/certs.yaml,ai-stack/ai-stack.yaml,minecraft/minecraft.yaml,argocd/ingress.yaml,tailscale/tailscale.yaml,longhorn/longhorn.yaml}'
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: argocd
