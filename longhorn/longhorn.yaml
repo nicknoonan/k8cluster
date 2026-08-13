@@ -70,6 +70,11 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
       - SkipDryRunOnMissingResource=true
+      # The Longhorn chart ships a longhorn-pre-upgrade helm hook that ArgoCD
+      # runs before the chart's ServiceAccounts exist, blocking the sync. The
+      # hook is a version-migration helper and isn't needed on fresh installs,
+      # so bypass it.
+      - DisableHook=true
     retry:
       limit: 5
       backoff:
