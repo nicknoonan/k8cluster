@@ -55,6 +55,13 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: longhorn-system
+  # Longhorn's node controller manages the .status of Node CRs; ignore it so
+  # ArgoCD doesn't report permanent drift / fight the controller.
+  ignoreDifferences:
+    - group: longhorn.io
+      kind: Node
+      jqPathExpressions:
+        - .status
   syncPolicy:
     automated:
       prune: true
@@ -62,6 +69,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+      - SkipDryRunOnMissingResource=true
     retry:
       limit: 5
       backoff:
