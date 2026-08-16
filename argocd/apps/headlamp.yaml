@@ -12,6 +12,21 @@ spec:
     helm:
       values: |
         fullnameOverride: headlamp
+        config:
+          oidc:
+            # OIDC config is sourced from an external secret (not committed to git).
+            # Create it with (after setting up the provider in Authentik):
+            #   kubectl -n headlamp create secret generic headlamp-oidc \
+            #     --from-literal=OIDC_CLIENT_ID='<client-id>' \
+            #     --from-literal=OIDC_CLIENT_SECRET='<client-secret>' \
+            #     --from-literal=OIDC_ISSUER_URL='https://idp.nicknoonan.net/application/o/headlamp/' \
+            #     --from-literal=OIDC_SCOPES='openid profile email'
+            secret:
+              create: false
+            externalSecret:
+              enabled: true
+              name: headlamp-oidc
+              hasScopes: true
         resources:
           requests:
             cpu: "100m"
