@@ -23,7 +23,7 @@ spec:
           allowVolumeExpansion: false
           archiveOnDelete: true
           name: nfs
-          provisionerName=k8s-sigs.io/nfs
+          provisionerName: k8s-sigs.io/nfs
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system
