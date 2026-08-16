@@ -32,7 +32,7 @@ spec:
               memory: 1Gi
           persistence:
             enabled: true
-            size: 50Gi
+            size: 2Gi
           additionalDataSources:
             - name: Loki
               type: loki
