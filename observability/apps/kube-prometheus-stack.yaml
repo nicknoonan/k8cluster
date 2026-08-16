@@ -36,6 +36,7 @@ spec:
               domain: grafana.nicknoonan.net
               root_url: https://grafana.nicknoonan.net/
               enforce_domain: true
+              serve_from_sub_path: false
             security:
               cookie_secure: true
           adminPassword: "admin"
