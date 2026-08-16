@@ -34,6 +34,8 @@ spec:
           env:
             GF_SERVER_ROOT_URL: "https://grafana.nicknoonan.net"
           grafana.ini:
+            log:
+              filters: oauth.generic_oauth:debug
             server:
               domain: grafana.nicknoonan.net
               enforce_domain: true
