@@ -31,10 +31,11 @@ spec:
                 memory: 1Gi
                 cpu: 1000m
         grafana:
+          env:
+            GF_SERVER_ROOT_URL: "https://grafana.nicknoonan.net"
           grafana.ini:
             server:
               domain: grafana.nicknoonan.net
-              root_url: https://grafana.nicknoonan.net/
               enforce_domain: true
               serve_from_sub_path: false
             security:
