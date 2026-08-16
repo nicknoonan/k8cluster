@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-dns-configurator
+  namespace: kube-system
+  labels:
+    app: node-dns-configurator
+spec:
+  selector:
+    matchLabels:
+      app: node-dns-configurator
+  template:
+    metadata:
+      labels:
+        app: node-dns-configurator
+    spec:
+      # Use host IPC / network namespace to send D-Bus / systemctl signals via nsenter
+      hostNetwork: true
+      hostPID: true
+      tolerations:
+        # Ensure it runs on all nodes, including control plane / master nodes
+        - operator: Exists
+      initContainers:
+        - name: setup-systemd-resolved
+          image: alpine:3.19
+          securityContext:
+            privileged: true
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -e
+              echo "Checking systemd-resolved configuration..."
+
+              RESOLVED_CONF="/host/etc/systemd/resolved.conf"
+
+              # Ensure key entries are present in /etc/systemd/resolved.conf
+              if ! grep -q "^DNS=10.43.0.10" "$RESOLVED_CONF"; then
+                echo "Adding DNS=10.43.0.10 to $RESOLVED_CONF"
+                sed -i '/^\[Resolve\]/a DNS=10.43.0.10' "$RESOLVED_CONF"
+              fi
+
+              if ! grep -q "^Domains=~\." "$RESOLVED_CONF"; then
+                echo "Adding Domains=~. to $RESOLVED_CONF"
+                sed -i '/^\[Resolve\]/a Domains=~.' "$RESOLVED_CONF"
+              fi
+
+              echo "Applying changes and restarting systemd-resolved on host..."
+              nsenter --target 1 --mount --uts --ipc --net --pid -- systemctl restart systemd-resolved
+
+              echo "DNS configuration successfully updated."
+          volumeMounts:
+            - name: host-etc
+              mountPath: /host/etc
+      containers:
+        # Keeps the DaemonSet active on each node
+        - name: pause
+          image: registry.k8s.io/pause:3.9
+          resources:
+            limits:
+              cpu: 10m
+              memory: 16Mi
+            requests:
+              cpu: 10m
+              memory: 16Mi
+      volumes:
+        - name: host-etc
+          hostPath:
+            path: /etc
+            type: Directory
