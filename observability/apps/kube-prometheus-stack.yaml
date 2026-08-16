@@ -16,13 +16,20 @@ spec:
             retention: 7d
             resources:
               requests:
-                memory: 512Mi
+                memory: 1Gi
                 cpu: 250m
               limits:
-                memory: 512Gi
-                cpu: 500m
+                memory: 1Gi
+                cpu: 1000m
         grafana:
           adminPassword: "admin"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: 1Gi
+            limits:
+              cpu: "1000m"
+              memory: 1Gi
           persistence:
             enabled: true
             size: 50Gi
@@ -43,6 +50,39 @@ spec:
               - secretName: grafana-tls
                 hosts:
                   - grafana.nicknoonan.net
+        alertmanager:
+          alertmanagerSpec:
+            resources:
+              requests:
+                cpu: "50m"
+                memory: 50Mi
+              limits:
+                cpu: "50m"
+                memory: 50Mi
+        prometheusOperator:
+          resources:
+            requests:
+              cpu: "50m"
+              memory: 100Mi
+            limits:
+              cpu: "100m"
+              memory: 100Mi
+        kube-state-metrics:
+          resources:
+            requests:
+              cpu: "50m"
+              memory: 100Mi
+            limits:
+              cpu: "100m"
+              memory: 100Mi
+        prometheus-node-exporter:
+          resources:
+            requests:
+              cpu: "50m"
+              memory: 100Mi
+            limits:
+              cpu: "100m"
+              memory: 100Mi
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: monitoring

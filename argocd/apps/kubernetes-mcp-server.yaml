@@ -15,6 +15,13 @@ spec:
       releaseName: kubernetes-mcp-server
       values: |
         fullnameOverride: kubernetes-mcp-server
+        resources:
+          requests:
+            cpu: "100m"
+            memory: 200Mi
+          limits:
+            cpu: "200m"
+            memory: 200Mi
         rbac:
           create: true
           extraClusterRoleBindings:

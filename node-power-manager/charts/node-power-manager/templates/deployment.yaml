@@ -36,6 +36,8 @@ spec:
               value: {{ .Values.config.sshShutdownCommand | quote }}
             - name: MANAGED_DEPLOYMENTS
               value: {{ join "," .Values.config.managedDeployments | quote }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: ssh-key
               mountPath: /etc/ssh-keys

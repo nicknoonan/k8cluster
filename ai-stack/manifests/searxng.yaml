@@ -36,6 +36,13 @@ spec:
         image: searxng/searxng:latest
         ports:
         - containerPort: 8080
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "500Mi"
+          limits:
+            cpu: "100m"
+            memory: "500Mi"
         volumeMounts:
         - name: searxng-config
           mountPath: /etc/searxng/settings.yml

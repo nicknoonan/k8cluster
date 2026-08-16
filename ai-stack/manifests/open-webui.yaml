@@ -38,6 +38,13 @@ spec:
           value: "10"
         - name: SEARXNG_QUERY_URL
           value: "http://searxng.ai-local.svc.cluster.local:8080/search?q=<query>"
+        resources:
+          requests:
+            cpu: "500m"
+            memory: 1500Mi
+          limits:
+            cpu: "1"
+            memory: 1500Mi
         volumeMounts:
         - name: webui-storage
           mountPath: /app/backend/data
