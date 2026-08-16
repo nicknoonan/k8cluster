@@ -25,7 +25,7 @@ spec:
           image: alpine:3.19
           securityContext:
             privileged: true
-          command: ["/bin/bash", "-c"]
+          command: ["/bin/sh", "-c"]
           args:
             - |
               set -e
