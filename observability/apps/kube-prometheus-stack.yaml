@@ -30,6 +30,11 @@ spec:
               limits:
                 memory: 1Gi
                 cpu: 1000m
+        grafana.ini:
+          server:
+            domain: grafana.nicknoonan.net
+            root_url: https://grafana.nicknoonan.net/
+            enforce_domain: true
         grafana:
           adminPassword: "admin"
           resources:
