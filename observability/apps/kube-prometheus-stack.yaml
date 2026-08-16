@@ -25,7 +25,7 @@ spec:
           adminPassword: "admin"
           persistence:
             enabled: true
-            size: 2Gi
+            size: 50Gi
           additionalDataSources:
             - name: Loki
               type: loki
