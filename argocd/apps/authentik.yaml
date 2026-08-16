@@ -120,7 +120,7 @@ spec:
               name: authentik-k8s-admins
             subjects:
               - kind: Group
-                name: k8s-admins
+                name: k8s-admin
                 apiGroup: rbac.authorization.k8s.io
             roleRef:
               kind: ClusterRole
