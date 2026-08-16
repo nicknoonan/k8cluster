@@ -38,6 +38,47 @@ spec:
           value: "10"
         - name: SEARXNG_QUERY_URL
           value: "http://searxng.ai-local.svc.cluster.local:8080/search?q=<query>"
+        # --- OIDC SSO via Authentik (idp.nicknoonan.net) ---
+        - name: WEBUI_URL
+          value: "https://ai.nicknoonan.net"
+        - name: ENABLE_OAUTH_SIGNUP
+          value: "true"
+        - name: OAUTH_MERGE_ACCOUNTS_BY_EMAIL
+          value: "true"
+        - name: OAUTH_PROVIDER_NAME
+          value: "Authentik"
+        - name: OAUTH_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: open-webui-oauth
+              key: client-id
+        - name: OAUTH_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: open-webui-oauth
+              key: client-secret
+        - name: OPENID_PROVIDER_URL
+          value: "https://idp.nicknoonan.net/application/o/open-webui/.well-known/openid-configuration"
+        - name: OPENID_REDIRECT_URI
+          value: "https://ai.nicknoonan.net/oauth/oidc/callback"
+        - name: OAUTH_SCOPES
+          value: "openid email profile"
+        - name: WEBUI_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: open-webui-oauth
+              key: webui-secret-key
+        # --- OAuth role mapping: Authentik group -> Open WebUI admin ---
+        # Authentik's `roles` claim must contain "admin" (for admins) or "user"
+        # (for everyone else). See the scope mapping in the Authentik provider.
+        - name: ENABLE_OAUTH_ROLE_MANAGEMENT
+          value: "true"
+        - name: OAUTH_ROLES_CLAIM
+          value: "roles"
+        - name: OAUTH_ALLOWED_ROLES
+          value: "user,admin"
+        - name: OAUTH_ADMIN_ROLES
+          value: "admin"
         resources:
           requests:
             cpu: "500m"
