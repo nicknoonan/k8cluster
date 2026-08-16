@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dns
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/nicknoonan/k8cluster.git'
+    targetRevision: HEAD
+    path: dns
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
