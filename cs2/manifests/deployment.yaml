@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cs2-dedicated
+  namespace: cs2
+  labels:
+    app: cs2-dedicated
+spec:
+  replicas: 1
+  # Recreate avoids local-path RWO volume lock contention when a replacement
+  # pod is briefly scheduled during an update.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: cs2-dedicated
+  template:
+    metadata:
+      labels:
+        app: cs2-dedicated
+    spec:
+      # Pin the server to the "bigboi" worker node (192.168.1.112) that has
+      # the local disk for the ~60GB game install.
+      nodeSelector:
+        kubernetes.io/hostname: bigboi
+        kubernetes.io/os: linux
+      # The bigboi node is tainted bigboi=true:NoSchedule (registered via
+      # `k3s agent --node-taint bigboi=true:NoSchedule`). Tolerate it.
+      tolerations:
+        - key: bigboi
+          operator: Exists
+          effect: NoSchedule
+      # The image runs as the unprivileged "steam" user (uid/gid 1000).
+      # fsGroup makes the local-path PVC (otherwise root-owned) writable.
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: cs2
+          image: joedwards32/cs2:latest
+          env:
+            # --- Secrets (created out-of-band; see credentials-secret.README) ---
+            - name: SRCDS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cs2-credentials
+                  key: SRCDS_TOKEN
+            - name: CS2_PW
+              valueFrom:
+                secretKeyRef:
+                  name: cs2-credentials
+                  key: CS2_PW
+            - name: CS2_RCONPW
+              valueFrom:
+                secretKeyRef:
+                  name: cs2-credentials
+                  key: CS2_RCONPW
+            # --- Server configuration ---
+            - name: CS2_SERVERNAME
+              value: "Private Tactical Operations"
+            - name: CS2_STARTMAP
+              value: "de_dust2"
+            - name: CS2_MAXPLAYERS
+              value: "10"
+            - name: STEAMAPPVALIDATE
+              value: "0"
+            # Optional: force a specific game mode instead of the default
+            # casual. Uncomment as desired.
+            # - name: CS2_GAMEALIAS
+            #   value: "competitive"
+          # 27015/UDP (game) and 27015/TCP (RCON) are exposed to the tailnet
+          # via the Tailscale LoadBalancer Service (see service.yaml).
+          ports:
+            - containerPort: 27015
+              protocol: UDP
+              name: game-udp
+            - containerPort: 27015
+              protocol: TCP
+              name: rcon-tcp
+          # The first SteamCMD download takes 5-15 minutes, so give readiness a
+          # generous delay. No livenessProbe on purpose: the container also
+          # re-downloads/updates the game on every restart.
+          readinessProbe:
+            tcpSocket:
+              port: rcon-tcp
+            initialDelaySeconds: 300
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: "2000m"
+              memory: "4Gi"
+            limits:
+              cpu: "6000m"
+              memory: "8Gi"
+          volumeMounts:
+            - name: cs2-storage
+              mountPath: /home/steam/cs2-dedicated/
+      volumes:
+        - name: cs2-storage
+          persistentVolumeClaim:
+            claimName: cs2-data-pvc

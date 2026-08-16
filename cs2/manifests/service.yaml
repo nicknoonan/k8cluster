@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cs2-service
+  namespace: cs2
+spec:
+  # Expose the server to the tailnet using the Tailscale operator's layer 3
+  # ingress, which proxies TCP *and* UDP (unlike the HTTP-only layer 7 mode).
+  # The operator assigns this Service a tailnet IP (100.x) and a MagicDNS name
+  # derived from the service (e.g. cs2-service.<tailnet>.ts.net). Players on
+  # the tailnet connect to that name/IP on port 27015.
+  #
+  # Same pattern as the minecraft Service (minecraft/manifests/service.yaml).
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  selector:
+    app: cs2-dedicated
+  ports:
+    - name: game-udp
+      port: 27015
+      targetPort: 27015
+      protocol: UDP
+    - name: rcon-tcp
+      port: 27015
+      targetPort: 27015
+      protocol: TCP

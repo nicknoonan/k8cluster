@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cs2-data-pvc
+  namespace: cs2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  # local-path provisions node-local disk on the "bigboi" node (where the pod
+  # is pinned). The CS2 base install needs ~60GB, so request 70Gi of headroom.
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 70Gi
