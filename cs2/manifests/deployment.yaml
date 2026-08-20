@@ -84,8 +84,9 @@ spec:
           readinessProbe:
             tcpSocket:
               port: rcon-tcp
-            initialDelaySeconds: 300
+            initialDelaySeconds: 30
             periodSeconds: 15
+            failureThreshold: 10
           resources:
             requests:
               cpu: "2000m"
