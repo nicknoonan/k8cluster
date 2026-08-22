@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codeserver
+  namespace: codeserver
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # Ensures volume detaches cleanly on updates
+  selector:
+    matchLabels:
+      app: codeserver
+  template:
+    metadata:
+      labels:
+        app: codeserver
+    spec:
+      containers:
+      - name: codeserver
+        image: codercom/codeserver:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: codeserver-secret
+              key: password
+        volumeMounts:
+        - name: codeserver-data
+          mountPath: /home/coder
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "2000m"
+            memory: "4Gi"
+      volumes:
+      - name: codeserver-data
+        persistentVolumeClaim:
+          claimName: codeserver
