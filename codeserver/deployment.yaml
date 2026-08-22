@@ -38,13 +38,16 @@ spec:
               name: codeserver-secret
               key: password
         - name: KUBECONFIG
-          value: /etc/kubeconfig/config # Point directly to the dedicated secret mount
+          value: /etc/kubeconfig/config
         volumeMounts:
         - name: codeserver-data
           mountPath: /config
         - name: kubeconfig
           mountPath: /etc/kubeconfig
           readOnly: true
+        # 1. Mount the host Docker socket into the container
+        - name: docker-socket
+          mountPath: /var/run/docker.sock
         resources:
           requests:
             cpu: "2000m"
@@ -59,4 +62,9 @@ spec:
       - name: kubeconfig
         secret:
           secretName: kubeconfig-secret
-          defaultMode: 0444 # World-readable permissions so user 1000 can access root-owned secret files
+          defaultMode: 0444
+      # 2. Define hostPath volume pointing to host's Docker socket
+      - name: docker-socket
+        hostPath:
+          path: /var/run/docker.sock
+          type: Socket
