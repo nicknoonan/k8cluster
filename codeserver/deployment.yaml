@@ -4,12 +4,22 @@ metadata:
   name: codeserver
   namespace: codeserver
 spec:
-  replicas: 1
+  replicas: 0
   strategy:
     type: Recreate # Ensures volume detaches cleanly on updates
   selector:
     matchLabels:
       app: codeserver
+  nodeSelector:
+    matchExpressions:
+    - key: "kubernetes.io/hostname"
+      operator: In
+      values:
+      - "bigboi"
+  tolerations:
+  - key: bigboi
+    operator: Exists
+    effect: NoSchedule
   template:
     metadata:
       labels:
