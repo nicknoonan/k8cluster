@@ -3,7 +3,8 @@ name: release node-power-manager
 on:
   push:
     branches: [main]
-    tags: ["v*"]
+    paths:
+      - 'node-power-manager/**'
 
 env:
   REGISTRY: ghcr.io
