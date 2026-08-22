@@ -5,7 +5,7 @@ metadata:
   namespace: codeserver
 spec:
   forwardAuth:
-    address: https://idp.nicknoonan.net/outpost.goauthentik.io/auth/traefik
+    address: http://authentik-server.authentik.svc.cluster.local:9000/outpost.goauthentik.io/auth/traefik
     trustForwardHeader: true
     authRequestHeaders:
       - Connection
