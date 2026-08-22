@@ -4,7 +4,7 @@ metadata:
   name: codeserver
   namespace: codeserver
 spec:
-  replicas: 0
+  replicas: 1
   strategy:
     type: Recreate # Ensures volume detaches cleanly on updates
   selector:
