@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: codeserver
-        image: codercom/codeserver:latest
+        image: lscr.io/linuxserver/code-server:latest
         ports:
         - containerPort: 8080
           name: http
