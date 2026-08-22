@@ -22,7 +22,7 @@ spec:
         - containerPort: 8080
           name: http
         env:
-        - name: PASSWORD
+        - name: SUDO_PASSWORD
           valueFrom:
             secretKeyRef:
               name: codeserver-secret
