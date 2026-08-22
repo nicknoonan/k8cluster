@@ -27,17 +27,6 @@ spec:
             password: ""
             port: 5432
 
-          # Enable Outpost Service exposing Proxy / LDAP endpoints
-          outposts:
-            docker_image_base: ghcr.io/goauthentik/dev-%(type)s
-            # Expose standard ports for Outposts managed within or outside K8s
-            container_image_base: ghcr.io/goauthentik/%(type)s:%(version)s
-
-        # Service config to expose Outpost endpoints in-cluster
-        outpostService:
-          enabled: true
-          type: ClusterIP
-
         server:
           replicas: 1
           ingress:
