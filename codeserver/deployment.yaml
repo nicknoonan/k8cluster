@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: codeserver
-        image: lscr.io/linuxserver/code-server:latest
+        image: ghcr.io/nicknoonan/k8cluster/codeserver:sha-7846807
         ports:
         - containerPort: 8080
           name: http
