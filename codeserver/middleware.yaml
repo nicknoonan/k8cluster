@@ -7,6 +7,9 @@ spec:
   forwardAuth:
     address: https://idp.nicknoonan.net/outpost.goauthentik.io/auth/codeserver
     trustForwardHeader: true
+    authRequestHeaders:
+      - Connection
+      - Upgrade
     authResponseHeaders:
       - X-authentik-username
       - X-authentik-groups
