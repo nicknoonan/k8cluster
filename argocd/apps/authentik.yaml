@@ -109,6 +109,13 @@ spec:
               enabled: true
               size: 20Gi
               storageClass: nfs
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
 
         # Maps the Authentik group "k8s-admins" (returned via the OIDC `groups`
         # claim) to the Kubernetes cluster-admin ClusterRole. This is what lets
