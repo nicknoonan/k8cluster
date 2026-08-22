@@ -112,10 +112,10 @@ spec:
           resources:
             requests:
               cpu: 250m
-              memory: 512Mi
+              memory: 1000Mi
             limits:
               cpu: 500m
-              memory: 512Mi
+              memory: 1000Mi
 
         # Maps the Authentik group "k8s-admins" (returned via the OIDC `groups`
         # claim) to the Kubernetes cluster-admin ClusterRole. This is what lets
