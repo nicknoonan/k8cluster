@@ -6,7 +6,7 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate # Ensures volume detaches cleanly on updates
+    type: Recreate
   selector:
     matchLabels:
       app: codeserver
@@ -28,14 +28,23 @@ spec:
         - containerPort: 8080
           name: http
         env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
         - name: SUDO_PASSWORD
           valueFrom:
             secretKeyRef:
               name: codeserver-secret
               key: password
+        - name: KUBECONFIG
+          value: /etc/kubeconfig/config # Point directly to the dedicated secret mount
         volumeMounts:
         - name: codeserver-data
           mountPath: /config
+        - name: kubeconfig
+          mountPath: /etc/kubeconfig
+          readOnly: true
         resources:
           requests:
             cpu: "250m"
@@ -47,3 +56,7 @@ spec:
       - name: codeserver-data
         persistentVolumeClaim:
           claimName: codeserver
+      - name: kubeconfig
+        secret:
+          secretName: kubeconfig-secret
+          defaultMode: 0444 # World-readable permissions so user 1000 can access root-owned secret files
