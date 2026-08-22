@@ -106,10 +106,10 @@ spec:
           primary:
             resources:
               requests:
-                cpu: 250m
+                cpu: 500m
                 memory: 1000Mi
               limits:
-                cpu: 500m
+                cpu: 1000m
                 memory: 1000Mi
             persistence:
               enabled: true
