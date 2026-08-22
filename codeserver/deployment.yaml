@@ -33,9 +33,16 @@ spec:
             secretKeyRef:
               name: codeserver-secret
               key: password
+        # Option A: Points kubectl directly to the mounted file location
+        - name: KUBECONFIG
+          value: /config/.kube/config
         volumeMounts:
         - name: codeserver-data
           mountPath: /config
+        - name: kubeconfig
+          mountPath: /config/.kube/config
+          subPath: config # Mounts only the file, leaving the rest of /config/.kube intact
+          readOnly: true
         resources:
           requests:
             cpu: "250m"
@@ -47,3 +54,10 @@ spec:
       - name: codeserver-data
         persistentVolumeClaim:
           claimName: codeserver
+      - name: kubeconfig
+        secret:
+          secretName: kubeconfig-secret
+          items:
+          - key: config # Change this to match the key name inside your Secret
+            path: config
+            mode: 0600
