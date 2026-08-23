@@ -8,7 +8,7 @@ upstreamDns:
 ttl: 30
 
 hosts:
-  - targetIp: 192.168.1.111
+  - targetIp: 100.86.71.78
     name: internal-cluster
   - targetIp: 100.69.219.12
     name: cs2
