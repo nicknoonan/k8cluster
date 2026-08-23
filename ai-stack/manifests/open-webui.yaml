@@ -81,6 +81,8 @@ spec:
           value: "admin"
         - name: ENABLE_LOGIN_FORM
           value: "false"
+        - name: ENABLE_PASSWORD_AUTH
+          value: "false"
         resources:
           requests:
             cpu: "500m"
