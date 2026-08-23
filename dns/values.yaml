@@ -18,7 +18,6 @@ rewrites:
   - ai
   - argocd
   - code
-  - cs2
   - grafana
   - headlamp
   - idp
