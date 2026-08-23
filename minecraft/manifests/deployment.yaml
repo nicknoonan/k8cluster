@@ -5,7 +5,7 @@ metadata:
   namespace: minecraft
 spec:
   serviceName: minecraft-legacy-headless
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: minecraft
@@ -104,7 +104,7 @@ metadata:
   namespace: minecraft
 spec:
   serviceName: minecraft-headless
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: minecraft
