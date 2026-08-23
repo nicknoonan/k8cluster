@@ -79,6 +79,8 @@ spec:
           value: "user,admin"
         - name: OAUTH_ADMIN_ROLES
           value: "admin"
+        - name: ENABLE_LOGIN_FORM
+          value: "false"
         resources:
           requests:
             cpu: "500m"
