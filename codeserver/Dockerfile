@@ -59,3 +59,9 @@ RUN echo 'export GOPATH=/config/go' >> /etc/bash.bashrc \
 # Install vim
 RUN apt-get update && apt-get install -y vim \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Starship
+RUN curl -sS https://starship.rs/install.sh | sh
+
+# Add to ~/.bashrc
+RUN echo 'eval "$(starship init bash)"' >> /etc/bash.bashrc
