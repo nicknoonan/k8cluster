@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     build-essential \
     git \
+    dnsutils \
+    vim \
     && rm -rf /var/lib/apt/lists/*
 
 # Add Docker official GPG key and APT repository
@@ -56,9 +58,6 @@ RUN curl -sL https://github.com/derailed/k9s/releases/latest/download/k9s_Linux_
 RUN echo 'export GOPATH=/config/go' >> /etc/bash.bashrc \
     && echo 'export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH' >> /etc/bash.bashrc
 
-# Install vim
-RUN apt-get update && apt-get install -y vim \
-    && rm -rf /var/lib/apt/lists/*
 
 # Install Starship
 RUN curl -sS https://starship.rs/install.sh | sh -s -- -y
