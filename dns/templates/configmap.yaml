@@ -10,6 +10,7 @@ data:
   {{ .Values.domain }}.server: |
     {{ .Values.domain }}:53 {
         errors
+        reload 10s
         cache {{ .Values.ttl }}
 
         # Rewrite rules
