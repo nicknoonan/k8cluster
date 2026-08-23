@@ -23,7 +23,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: codeserver
-        image: ghcr.io/nicknoonan/k8cluster/codeserver:sha-4c53cf7
+        image: ghcr.io/nicknoonan/k8cluster/codeserver:sha-0ab7e7f
         ports:
         - containerPort: 8080
           name: http
