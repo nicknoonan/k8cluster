@@ -12,6 +12,7 @@ data:
         hosts {
             192.168.1.111 internal-cluster.nicknoonan.net
             100.116.63.79 idp.nicknoonan.net
+            100.116.63.79 bogus.nicknoonan.net
             fallthrough
         }
         forward . 1.1.1.1 8.8.8.8
