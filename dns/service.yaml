@@ -5,10 +5,6 @@ metadata:
   namespace: kube-system
 spec:
   type: LoadBalancer
-  ipFamilyPolicy: PreferDualStack
-  ipFamilies:
-    - IPv4
-    - IPv6
   selector:
     k8s-app: kube-dns
   ports:
