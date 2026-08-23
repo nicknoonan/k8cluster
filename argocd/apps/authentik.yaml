@@ -36,6 +36,9 @@ spec:
               traefik.ingress.kubernetes.io/router.entrypoints: websecure
               traefik.ingress.kubernetes.io/router.tls: "true"
               cert-manager.io/cluster-issuer: letsencrypt-prod
+              # Prevent "context canceled" errors on long-lived connections / SSE / WebSockets
+              traefik.ingress.kubernetes.io/request-timeout: "0s"
+              traefik.ingress.kubernetes.io/transport.respondingtimeouts.idle-timeout: "180s"
             hosts:
               - idp.nicknoonan.net
             tls:
@@ -58,6 +61,8 @@ spec:
                 secretKeyRef:
                   name: authentik-secrets
                   key: bootstrap-password
+            - name: AUTHENTIK_WEB__WORKERS
+              value: "2"
           resources:
             requests:
               cpu: 250m
@@ -87,7 +92,7 @@ spec:
           resources:
             requests:
               cpu: 250m
-              memory: 512Mi
+              memory: 1Gi
             limits:
               cpu: "1"
               memory: 1Gi
