@@ -18,7 +18,6 @@ data:
         rewrite name exact headlamp.nicknoonan.net internal-cluster.nicknoonan.net
         rewrite name exact idp.nicknoonan.net internal-cluster.nicknoonan.net
         rewrite name exact k8s-mcp.nicknoonan.net internal-cluster.nicknoonan.net
-        rewrite name exact testing.nicknoonan.net internal-cluster.nicknoonan.net
 
         hosts {
             192.168.1.111 internal-cluster.nicknoonan.net
