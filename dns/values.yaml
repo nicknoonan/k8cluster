@@ -1,13 +1,17 @@
 # DNS Server Zone Settings
 domain: nicknoonan.net
-targetHostname: internal-cluster.nicknoonan.net
-targetIp: 192.168.1.111
 
 upstreamDns:
   - 1.1.1.1
   - 8.8.8.8
 
 ttl: 30
+
+hosts:
+  - targetIp: 192.168.1.111
+    name: internal-cluster
+  - targetIp: 100.69.219.12
+    name: cs2
 
 # Subdomains to rewrite to targetHostname
 rewrites:

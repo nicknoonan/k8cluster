@@ -19,7 +19,9 @@ data:
         {{- end }}
 
         hosts {
-            {{ .Values.targetIp }} {{ .Values.targetHostname }}
+            {{- range .Values.hosts }}
+            {{ .targetIp }} {{ .name }}.{{ $.Values.domain }}
+            {{- end }}
             fallthrough
         }
         forward . {{ range .Values.upstreamDns }}{{ . }} {{ end }}
