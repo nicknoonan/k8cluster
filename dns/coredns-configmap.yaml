@@ -4,22 +4,23 @@ metadata:
   name: coredns-custom
   namespace: kube-system
 data:
-  # Naming the key *.server tells CoreDNS to import this as an independent zone
   nicknoonan.server: |
     nicknoonan.net:53 {
         errors
         cache 30
+
+        # Rewrite rules placed at the server block root
+        rewrite name exact ai.nicknoonan.net internal-cluster.nicknoonan.net
+        rewrite name exact argocd.nicknoonan.net internal-cluster.nicknoonan.net
+        rewrite name exact code.nicknoonan.net internal-cluster.nicknoonan.net
+        rewrite name exact cs2.nicknoonan.net internal-cluster.nicknoonan.net
+        rewrite name exact grafana.nicknoonan.net internal-cluster.nicknoonan.net
+        rewrite name exact headlamp.nicknoonan.net internal-cluster.nicknoonan.net
+        rewrite name exact idp.nicknoonan.net internal-cluster.nicknoonan.net
+        rewrite name exact k8s-mcp.nicknoonan.net internal-cluster.nicknoonan.net
+        rewrite name exact testing.nicknoonan.net internal-cluster.nicknoonan.net
+
         hosts {
-            rewrite name exact ai.nicknoonan.net internal-cluster.nicknoonan.net
-            rewrite name exact argocd.nicknoonan.net internal-cluster.nicknoonan.net
-            rewrite name exact code.nicknoonan.net internal-cluster.nicknoonan.net
-            rewrite name exact cs2.nicknoonan.net internal-cluster.nicknoonan.net
-            rewrite name exact grafana.nicknoonan.net internal-cluster.nicknoonan.net
-            rewrite name exact headlamp.nicknoonan.net internal-cluster.nicknoonan.net
-            rewrite name exact idp.nicknoonan.net internal-cluster.nicknoonan.net
-            rewrite name exact internal-cluster.nicknoonan.net internal-cluster.nicknoonan.net
-            rewrite name exact k8s-mcp.nicknoonan.net internal-cluster.nicknoonan.net
-            rewrite name exact testing.nicknoonan.net internal-cluster.nicknoonan.net 
             192.168.1.111 internal-cluster.nicknoonan.net
             fallthrough
         }
