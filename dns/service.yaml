@@ -5,6 +5,7 @@ metadata:
   namespace: kube-system
 spec:
   type: LoadBalancer
+  loadBalancerClass: tailscale
   selector:
     k8s-app: kube-dns
   ports:
