@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: coredns-tailscale
+  namespace: kube-system
+  annotations:
+    # Optional: sets a specific hostname in your Tailnet (e.g. coredns.your-tailnet.ts.net)
+    tailscale.com/hostname: "coredns-k8s" 
+spec:
+  type: LoadBalancer
+  loadBalancerClass: tailscale
+  selector:
+    k8s-app: kube-dns
+  ports:
+    - name: dns-udp
+      port: 53
+      protocol: UDP
+      targetPort: 53
+    - name: dns-tcp
+      port: 53
+      protocol: TCP
+      targetPort: 53
