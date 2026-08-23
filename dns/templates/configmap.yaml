@@ -15,7 +15,7 @@ data:
 
         # Rewrite rules
         {{- range .Values.rewrites }}
-        rewrite name exact {{ . }}.{{ $.Values.domain }} {{ $.Values.targetHostname }}
+        rewrite name exact {{ . }}.{{ $.Values.domain }} {{ $.Values.internalHostname }}
         {{- end }}
 
         hosts {

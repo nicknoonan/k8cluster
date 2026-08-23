@@ -13,7 +13,8 @@ hosts:
   - targetIp: 100.69.219.12
     name: cs2
 
-# Subdomains to rewrite to targetHostname
+# Subdomains to rewrite to internal hostname (e.g. internal-cluster.nicknoonan.net)
+internalHostname: internal-cluster.nicknoonan.net
 rewrites:
   - ai
   - argocd
