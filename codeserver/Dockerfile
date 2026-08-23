@@ -55,3 +55,7 @@ RUN curl -sL https://github.com/derailed/k9s/releases/latest/download/k9s_Linux_
 # Ensure default user shell inherits GOPATH and PATH permanently
 RUN echo 'export GOPATH=/config/go' >> /etc/bash.bashrc \
     && echo 'export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH' >> /etc/bash.bashrc
+
+# Install vim
+RUN apt-get update && apt-get install -y vim \
+    && rm -rf /var/lib/apt/lists/*
