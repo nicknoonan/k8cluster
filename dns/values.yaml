@@ -1,0 +1,35 @@
+# DNS Server Zone Settings
+domain: nicknoonan.net
+targetHostname: internal-cluster.nicknoonan.net
+targetIp: 192.168.1.111
+
+upstreamDns:
+  - 1.1.1.1
+  - 8.8.8.8
+
+ttl: 30
+
+# Subdomains to rewrite to targetHostname
+rewrites:
+  - ai
+  - argocd
+  - code
+  - cs2
+  - grafana
+  - headlamp
+  - idp
+  - k8s-mcp
+
+# Node DNS Configurator Settings
+nodeDnsConfigurator:
+  enabled: true
+  clusterDnsIp: 10.43.0.10
+  image:
+    alpine: alpine:3.19
+    pause: registry.k8s.io/pause:3.9
+
+# LAN Service Configuration
+service:
+  enabled: true
+  name: coredns-lan
+  loadBalancerIP: ""  # Optional: specify static IP if required by load balancer (e.g. MetalLB)

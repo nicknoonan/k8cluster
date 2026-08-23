@@ -1,0 +1,6 @@
+apiVersion: v2
+name: coredns-lan-config
+description: Helm chart to configure CoreDNS custom rewrites, node systemd-resolved DNS, and LAN LoadBalancer service
+type: application
+version: 0.1.0
+appVersion: "1.10.0"

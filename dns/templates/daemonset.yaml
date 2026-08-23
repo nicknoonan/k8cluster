@@ -1,10 +1,13 @@
+{{- if .Values.nodeDnsConfigurator.enabled }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: node-dns-configurator
-  namespace: kube-system
+  namespace: {{ .Release.Namespace }}
   labels:
     app: node-dns-configurator
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
@@ -14,15 +17,13 @@ spec:
       labels:
         app: node-dns-configurator
     spec:
-      # Use host IPC / network namespace to send D-Bus / systemctl signals via nsenter
       hostNetwork: true
       hostPID: true
       tolerations:
-        # Ensure it runs on all nodes, including control plane / master nodes
         - operator: Exists
       initContainers:
         - name: setup-systemd-resolved
-          image: alpine:3.19
+          image: {{ .Values.nodeDnsConfigurator.image.alpine }}
           securityContext:
             privileged: true
           command: ["/bin/sh", "-c"]
@@ -33,10 +34,9 @@ spec:
 
               RESOLVED_CONF="/host/etc/systemd/resolved.conf"
 
-              # Ensure key entries are present in /etc/systemd/resolved.conf
-              if ! grep -q "^DNS=10.43.0.10" "$RESOLVED_CONF"; then
-                echo "Adding DNS=10.43.0.10 to $RESOLVED_CONF"
-                sed -i '/^\[Resolve\]/a DNS=10.43.0.10' "$RESOLVED_CONF"
+              if ! grep -q "^DNS={{ .Values.nodeDnsConfigurator.clusterDnsIp }}" "$RESOLVED_CONF"; then
+                echo "Adding DNS={{ .Values.nodeDnsConfigurator.clusterDnsIp }} to $RESOLVED_CONF"
+                sed -i '/^\[Resolve\]/a DNS={{ .Values.nodeDnsConfigurator.clusterDnsIp }}' "$RESOLVED_CONF"
               fi
 
               if ! grep -q "^Domains=~\." "$RESOLVED_CONF"; then
@@ -52,9 +52,8 @@ spec:
             - name: host-etc
               mountPath: /host/etc
       containers:
-        # Keeps the DaemonSet active on each node
         - name: pause
-          image: registry.k8s.io/pause:3.9
+          image: {{ .Values.nodeDnsConfigurator.image.pause }}
           resources:
             limits:
               cpu: 10m
@@ -67,3 +66,4 @@ spec:
           hostPath:
             path: /etc
             type: Directory
+{{- end }}
