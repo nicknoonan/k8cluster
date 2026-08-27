@@ -24,6 +24,11 @@ spec:
       containers:
       - name: codeserver
         image: ghcr.io/nicknoonan/k8cluster/codeserver:sha-00cdc7d
+        # Privileged so PlatformIO can flash/read boards attached to bigboi
+        # (ttyUSB0/ttyACM0 etc.). Consistent with the already-mounted Docker
+        # socket, which also grants host root via the Docker API.
+        securityContext:
+          privileged: true
         ports:
         - containerPort: 8080
           name: http
@@ -48,6 +53,9 @@ spec:
         # 1. Mount the host Docker socket into the container
         - name: docker-socket
           mountPath: /var/run/docker.sock
+        # 3. Mount host devices so PlatformIO can flash/serial-monitor boards
+        - name: dev
+          mountPath: /dev
         resources:
           requests:
             cpu: "2000m"
@@ -68,3 +76,8 @@ spec:
         hostPath:
           path: /var/run/docker.sock
           type: Socket
+      # 4. Define hostPath volume pointing to host's /dev for USB/serial access
+      - name: dev
+        hostPath:
+          path: /dev
+          type: Directory

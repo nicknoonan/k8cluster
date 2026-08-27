@@ -5,6 +5,14 @@ ENV GO_VERSION=1.27.0
 ENV GOPATH=/config/go
 ENV PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
 
+# PlatformIO environment
+# Keep PlatformIO core/toolchains on the persistent /config volume so they
+# survive pod restarts, and allow pip installs on Ubuntu 24.04 (PEP 668).
+ENV PLATFORMIO_CORE_DIR=/config/.platformio
+ENV PLATFORMIO_HOME_DIR=/config/.platformio
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+ENV PIP_NO_CACHE_DIR=1
+
 # Install base dependencies and build essentials
 RUN apt-get update && apt-get install -y \
     ca-certificates \
@@ -37,6 +45,33 @@ RUN apt-get update && apt-get install -y \
     gh \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Python 3 + dependencies required by the PlatformIO IDE extension
+# (python3-venv is required by PlatformIO on Linux; cmake/ninja are used by
+# platforms such as ESP-IDF; clangd powers C/C++ IntelliSense).
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    python3-dev \
+    cmake \
+    ninja-build \
+    clangd \
+    dfu-util \
+    libftdi1-2 \
+    libusb-1.0-0 \
+    usbutils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PlatformIO Core (CLI) system-wide so `pio` works in any terminal
+RUN pip3 install --break-system-packages platformio
+
+# PlatformIO udev rules + grant the default user (abc) serial/USB device access
+RUN mkdir -p /etc/udev/rules.d \
+    && curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/system/99-platformio-udev.rules \
+        -o /etc/udev/rules.d/99-platformio-udev.rules \
+    && groupadd -f plugdev \
+    && usermod -a -G dialout,plugdev abc
+
 # Install Go Toolchain
 RUN curl -sL "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" | tar -C /usr/local -xz
 
@@ -64,3 +99,8 @@ RUN curl -sS https://starship.rs/install.sh | sh -s -- -y
 
 # Add to ~/.bashrc
 RUN echo 'eval "$(starship init bash)"' >> /etc/bash.bashrc
+
+# Auto-install the PlatformIO IDE extension on first container boot
+# (script lives in /custom-cont-init.d, run by linuxserver's s6 init as root)
+COPY custom-cont-init.d/10-platformio.sh /custom-cont-init.d/10-platformio.sh
+RUN chmod +x /custom-cont-init.d/10-platformio.sh
