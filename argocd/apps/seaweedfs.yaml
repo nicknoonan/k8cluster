@@ -1,0 +1,96 @@
+# SeaweedFS — single-node ("all-in-one") S3-compatible object storage.
+#
+# Backend data is stored on the cluster `nfs` StorageClass (provisioned by the
+# nfs-subdir-external-provisioner app). A single replica / single PVC layout is
+# used because NFS-backed volumes are not suitable for erasure-coded multi-node
+# object-store layouts.
+#
+# S3 credentials are NOT committed here. Before ArgoCD syncs this app, create
+# the Secret the chart references (otherwise the pod sits in
+# CreateContainerConfigError):
+#
+#   kubectl create secret generic seaweedfs-s3-creds \
+#     --namespace seaweedfs \
+#     --from-literal=admin_access_key_id='<20-char-access-key>' \
+#     --from-literal=admin_secret_access_key='<40-char-secret-key>' \
+#     --from-literal=read_access_key_id='<20-char-access-key>' \
+#     --from-literal=read_secret_access_key='<40-char-secret-key>'
+#
+#   - admin_*  - full Admin/Read/Write access (for the S3 console / mc admin)
+#   - read_*   - ReadOnly access (for apps that only consume objects)
+#
+# S3 endpoint inside the cluster:
+#   http://seaweedfs-all-in-one.seaweedfs.svc.cluster.local:8333
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: seaweedfs
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://seaweedfs.github.io/seaweedfs/helm
+    chart: seaweedfs
+    targetRevision: 4.45.0
+    helm:
+      releaseName: seaweedfs
+      values: |
+        # Disable the split-out master / volume / filer / s3 statefulsets: the
+        # all-in-one deployment below runs all roles in a single `weed server`
+        # process.
+        master:
+          enabled: false
+        volume:
+          enabled: false
+        filer:
+          enabled: false
+        s3:
+          enabled: false
+          # S3 gateway auth (users/permissions). The generated users config
+          # references the keys through env vars sourced from the
+          # `seaweedfs-s3-creds` Secret described in the header comment.
+          enableAuth: true
+          credentials:
+            admin:
+              existingSecret: seaweedfs-s3-creds
+              accessKeyKey: admin_access_key_id
+              secretKeyKey: admin_secret_access_key
+            read:
+              existingSecret: seaweedfs-s3-creds
+              accessKeyKey: read_access_key_id
+              secretKeyKey: read_secret_access_key
+
+        allInOne:
+          enabled: true
+          replicas: 1
+          updateStrategy:
+            # Single replica + PVC: restart in place instead of rolling.
+            type: Recreate
+          resources:
+            requests:
+              cpu: "500m"
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          s3:
+            enabled: true
+            enableAuth: true
+          # Backend storage layer for the S3 server -> cluster `nfs` StorageClass.
+          data:
+            type: persistentVolumeClaim
+            storageClass: nfs
+            size: 100Gi
+            accessModes:
+              - ReadWriteOnce
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: seaweedfs
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
