@@ -23,6 +23,7 @@ rewrites:
   - headlamp
   - idp
   - k8s-mcp
+  - seaweed
 
 # Node DNS Configurator Settings
 nodeDnsConfigurator:

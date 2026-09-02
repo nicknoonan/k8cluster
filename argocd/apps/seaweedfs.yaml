@@ -21,6 +21,9 @@
 #
 # S3 endpoint inside the cluster:
 #   http://seaweedfs-all-in-one.seaweedfs.svc.cluster.local:8333
+#
+# Public HTTPS S3 endpoint:
+#   https://seaweed.nicknoonan.net
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -61,6 +64,20 @@ spec:
               existingSecret: seaweedfs-s3-creds
               accessKeyKey: read_access_key_id
               secretKeyKey: read_secret_access_key
+          ingress:
+            enabled: true
+            className: traefik
+            host: seaweed.nicknoonan.net
+            path: /
+            pathType: Prefix
+            annotations:
+              traefik.ingress.kubernetes.io/router.entrypoints: websecure
+              traefik.ingress.kubernetes.io/router.tls: "true"
+              cert-manager.io/cluster-issuer: letsencrypt-prod
+            tls:
+              - hosts:
+                  - seaweed.nicknoonan.net
+                secretName: seaweed-tls
 
         allInOne:
           enabled: true
