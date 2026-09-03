@@ -24,6 +24,7 @@ rewrites:
   - idp
   - k8s-mcp
   - seaweed
+  - node-power-manager
 
 # Node DNS Configurator Settings
 nodeDnsConfigurator:
